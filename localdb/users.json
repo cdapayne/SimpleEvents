@@ -1,0 +1,17 @@
+[
+  {
+    "id": "7a802966-f9ad-4d5d-b723-dd7154d0378d",
+    "accountId": "b8016d7b-fd6a-4233-bfa1-9a066d2fdaf1",
+    "email": "owner@example.com",
+    "role": "owner",
+    "createdAt": "2025-09-13T00:58:41.382Z"
+  },
+  {
+    "id": "bee79aca-6f19-43a0-926e-72fd91f05105",
+    "accountId": "76c9bdd3-ea37-4cbe-82e0-e2896f3ffc38",
+    "email": "carlton.payne@hotmail.com",
+    "role": "owner",
+    "passwordHash": "$2a$10$j3NnO/lsKtMHcUyBE/F/ceBLfQKcaqkY0Yyq/7qp2ALiz2o5ipNDq",
+    "createdAt": "2025-09-13T01:39:05.335Z"
+  }
+]

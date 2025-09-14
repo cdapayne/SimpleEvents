@@ -1,0 +1,21 @@
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <h1 class="h3 mb-3">Create Account</h1>
+    <% if (typeof error !== 'undefined') { %>
+      <div class="alert alert-danger"><%= error %></div>
+    <% } %>
+    <form method="POST" action="/register">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-control" required autocomplete="email" />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" required minlength="8" autocomplete="new-password" />
+      </div>
+      <button class="btn btn-primary w-100" type="submit">Register</button>
+      <p class="text-muted small mt-3 mb-0">Already have an account? <a href="/login">Login</a></p>
+    </form>
+  </div>
+</div>

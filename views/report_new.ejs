@@ -1,0 +1,306 @@
+<div class="row g-3">
+  <div class="col-lg-4">
+    <form id="reportForm" class="card card-body shadow-sm small gap-2" style="border-radius:1rem;">
+      <h6 class="fw-semibold mb-2">New Report</h6>
+      <div class="row g-2">
+        <div class="col-12">
+          <label class="form-label">Name</label>
+          <input name="name" class="form-control form-control-sm" placeholder="My Report" />
+        </div>
+        <div class="col-6">
+          <label class="form-label">From</label>
+          <input type="datetime-local" name="from" class="form-control form-control-sm" />
+        </div>
+        <div class="col-6">
+          <label class="form-label">To</label>
+          <input type="datetime-local" name="to" class="form-control form-control-sm" />
+        </div>
+      </div>
+      <div class="row g-2 mt-1">
+        <div class="col-6">
+          <label class="form-label">Group</label>
+          <select name="groupBy" class="form-select form-select-sm" id="groupBy">
+            <option value="type">Event</option>
+            <option value="app">App</option>
+          </select>
+        </div>
+        <div class="col-6">
+          <label class="form-label">Aggregate</label>
+          <select name="aggregate" class="form-select form-select-sm" id="aggregate">
+            <option value="count">Count</option>
+            <option value="sum">Sum</option>
+            <option value="avg">Average</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-2" id="valueFieldWrap">
+        <label class="form-label">Value Field</label>
+        <select name="valueField" id="valueField" class="form-select form-select-sm"><option value="">(None)</option></select>
+      </div>
+      <div class="mt-2">
+        <label class="form-label">Interval</label>
+        <select name="interval" class="form-select form-select-sm" id="interval">
+          <option value="hour">Hour</option>
+          <option value="day" selected>Day</option>
+          <option value="week">Week</option>
+          <option value="month">Month</option>
+        </select>
+      </div>
+      <div class="mt-2">
+        <label class="form-label">Display</label>
+        <select name="chartType" id="chartType" class="form-select form-select-sm">
+          <option value="line">Line</option>
+          <option value="area">Area</option>
+          <option value="bar">Bar</option>
+          <option value="pie">Pie</option>
+          <option value="doughnut">Doughnut</option>
+          <option value="radar">Radar</option>
+          <option value="polarArea">Polar Area</option>
+          <option value="number">Number</option>
+        </select>
+      </div>
+      <div class="mt-3" id="selectionSection">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <label class="form-label mb-0" id="selectionLabel">Events</label>
+          <button type="button" class="btn btn-link btn-sm p-0" id="selectAllBtn">Select All</button>
+        </div>
+        <div id="selectionBox" class="border rounded p-2 small d-flex flex-wrap gap-2" style="max-height:160px;overflow:auto"></div>
+      </div>
+      <div class="mt-2">
+        <label class="form-label small fw-semibold d-flex justify-content-between align-items-center">Filters <span class="text-muted fw-normal small" id="filtersHelp">(match events)</span></label>
+        <div id="filtersBox" class="d-flex flex-column gap-2"></div>
+        <button type="button" class="btn btn-outline-secondary btn-sm mt-2" id="addFilterBtn">Add Filter</button>
+      </div>
+      <div class="mt-2">
+        <label class="form-label small fw-semibold">Quick Ranges</label>
+        <div class="d-flex flex-wrap gap-2">
+          <button type="button" class="btn btn-outline-secondary btn-sm range" data-days="1">1d</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm range" data-days="3">3d</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm range" data-days="7">7d</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm range" data-days="30">30d</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm range" data-days="365">Year</button>
+        </div>
+      </div>
+      <div class="mt-2">
+        <label class="form-label small fw-semibold">Presets</label>
+        <div class="d-flex flex-wrap gap-2">
+          <button type="button" class="btn btn-outline-secondary btn-sm preset" data-preset="daily_events">Daily Events</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm preset" data-preset="top_event_types">Top Event Types (7d)</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm preset" data-preset="top_apps_30d">Top Apps (30d)</button>
+        </div>
+      </div>
+      <div class="d-flex gap-2 mt-3 flex-wrap">
+        <button class="btn btn-sm btn-primary" type="submit">Preview</button>
+        <button class="btn btn-sm btn-success flex-grow-1" type="button" id="saveDashBtn" title="Save to dashboard">Save & Add to Dashboard</button>
+      </div>
+    </form>
+  </div>
+  <div class="col-lg-8">
+    <div class="card shadow-sm mb-3" style="border-radius:1rem;">
+      <div class="card-body">
+        <canvas id="reportChart" height="160"></canvas>
+      </div>
+    </div>
+    <div class="card shadow-sm" style="border-radius:1rem;">
+      <div class="card-body p-0">
+        <div class="table-responsive mb-0">
+          <table class="table table-sm mb-0" id="reportTable">
+            <thead class="table-light"><tr id="reportHead"></tr></thead>
+            <tbody id="reportBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="card shadow-sm mt-3" style="border-radius:1rem;">
+      <div class="card-body p-0">
+        <div class="d-flex justify-content-between align-items-center px-3 pt-3">
+          <h6 class="mb-0 small fw-semibold">Sample Events <span class="text-muted fw-normal" id="sampleCount"></span></h6>
+          <span class="text-muted small">(First 100 after filters)</span>
+        </div>
+        <div class="table-responsive mb-0">
+          <table class="table table-sm mb-0" id="sampleTable">
+            <thead class="table-light"><tr id="sampleHead"></tr></thead>
+            <tbody id="sampleBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script nonce="<%= cspNonce %>">
+(function(){
+  // Debounced live preview similar to Mixpanel behavior
+  let previewTimer = null; // timeout id
+  let lastPreviewBody = null; // cache last request body to avoid duplicate fetches
+  let inFlightController = null; // abort controller for previous preview fetch
+  function schedulePreview(){
+    if(previewTimer) clearTimeout(previewTimer);
+    previewTimer = setTimeout(()=>{
+      previewTimer = null;
+      submit(false, true); // silent preview (no redirect)
+    }, 350); // debounce delay
+  }
+  function bodiesEqual(a,b){
+    try { return JSON.stringify(a) === JSON.stringify(b); } catch(e){ return false; }
+  }
+  function isoLocal(dt){ return dt.toISOString().slice(0,16); }
+  async function fetchMeta(){
+    const res = await fetch('/api/v1/events/meta');
+    if(!res.ok) return { events:[], apps:[], payloadFields:[] };
+    return res.json();
+  }
+  const now = new Date();
+  const from = new Date(now.getTime() - 7*24*3600*1000);
+  const form = document.getElementById('reportForm');
+  form.from.value = isoLocal(from); form.to.value = isoLocal(now);
+  let chart; function renderChart(payload){
+    const ctx = document.getElementById('reportChart').getContext('2d');
+    if(chart) chart.destroy();
+    const chartType = payload.chartType === 'area' ? 'line' : payload.chartType;
+    const cfg = { type: chartType, data: { labels: payload.labels, datasets: payload.datasets.map(d=>({label:d.label,data:d.data, fill: payload.chartType==='area', tension: payload.chartType==='area'?0.35:0, borderWidth:1})) }, options:{ responsive:true, scales: (chartType==='pie'||chartType==='doughnut'||chartType==='radar'||chartType==='polarArea')?{}:{ y:{ beginAtZero:true } } } };
+    chart = new Chart(ctx, cfg);
+  }
+  function renderTable(payload){
+    const head = document.getElementById('reportHead');
+    const body = document.getElementById('reportBody');
+    head.innerHTML=''; body.innerHTML='';
+    payload.table.columns.forEach(col=>{ const th=document.createElement('th'); th.textContent=col; head.appendChild(th); });
+    payload.table.rows.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${r.group}</td>` + r.values.map(v=>`<td>${v}</td>`).join(''); body.appendChild(tr); });
+  }
+  function toggleForMode(){
+    const mode = form.chartType.value;
+    const intervalWrap = document.getElementById('interval').closest('.mt-2');
+    if(mode==='number') intervalWrap.style.display='none'; else intervalWrap.style.display='';
+    const needsValue = ['sum','avg'].includes(form.aggregate.value);
+    document.getElementById('valueFieldWrap').style.display = needsValue ? '' : 'none';
+  }
+  form.chartType.addEventListener('change', toggleForMode); form.aggregate.addEventListener('change', toggleForMode); toggleForMode();
+  document.getElementById('groupBy').addEventListener('change', () => { renderSelection(); });
+  // Live preview listeners for key form fields
+  ['groupBy','aggregate','valueField','interval','chartType'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.addEventListener('change', ()=>{ toggleForMode(); schedulePreview(); });
+  });
+  ['from','to'].forEach(n=>{ const el=form.querySelector(`[name="${n}"]`); if(el) el.addEventListener('change', ()=> schedulePreview()); });
+  document.querySelectorAll('.range').forEach(btn=>btn.addEventListener('click',()=>{
+    const days = parseInt(btn.getAttribute('data-days')); const end = new Date(); const start = new Date(end.getTime()-days*24*3600*1000);
+    form.from.value = isoLocal(start); form.to.value = isoLocal(end); submit(false);
+  }));
+  let META = { events:[], apps:[], payloadFields:[] };
+  function renderSelection(){
+    const box = document.getElementById('selectionBox');
+    box.innerHTML='';
+    const mode = document.getElementById('groupBy').value;
+    if(mode.startsWith('payload.')){
+      document.getElementById('selectionSection').style.display='none';
+      return;
+    }
+    document.getElementById('selectionSection').style.display='';
+    const list = mode==='type' ? META.events : META.apps;
+    document.getElementById('selectionLabel').textContent = mode==='type' ? 'Events' : 'Apps';
+    list.forEach(v=>{
+      const id = 'chk_'+mode+'_'+v.replace(/[^a-z0-9_]/ig,'_');
+      const wrap = document.createElement('label'); wrap.className='form-check form-check-inline m-0';
+      wrap.innerHTML = `<input class="form-check-input me-1 selBox" type="checkbox" id="${id}" value="${v}" checked> <span class="small">${v}</span>`;
+      box.appendChild(wrap);
+    });
+  // Add listeners for live preview
+  box.querySelectorAll('.selBox').forEach(cb=> cb.addEventListener('change', ()=> schedulePreview()));
+  }
+  function populateValueFields(){
+    const sel = document.getElementById('valueField');
+    sel.innerHTML = '<option value="">(None)</option>' + META.payloadFields.map(k=>`<option value="payload.${k}">${k}</option>`).join('');
+    const groupSel = document.getElementById('groupBy');
+    META.payloadFields.forEach(k=>{
+      const val='payload.'+k;
+      if(!Array.from(groupSel.options).some(o=>o.value===val)){
+        const opt=document.createElement('option'); opt.value=val; opt.textContent='Payload: '+k; groupSel.appendChild(opt);
+      }
+    });
+  }
+  function addFilterRow(field='', value=''){
+    const box=document.getElementById('filtersBox');
+    const row=document.createElement('div'); row.className='d-flex gap-2 align-items-start filter-row';
+    row.innerHTML=`<select class="form-select form-select-sm filter-field" style="max-width:170px;">
+      <option value="type">Event</option>
+      <option value="app">App</option>
+      ${META.payloadFields.map(k=>`<option value="payload.${k}">payload.${k}</option>`).join('')}
+    </select>
+    <input class="form-control form-control-sm filter-value" placeholder="Value" value="${value}" />
+    <button type="button" class="btn btn-sm btn-outline-danger filter-del">×</button>`;
+    box.appendChild(row);
+    if(field) row.querySelector('.filter-field').value=field;
+  const fieldEl = row.querySelector('.filter-field');
+  const valueEl = row.querySelector('.filter-value');
+  fieldEl.addEventListener('change', ()=> schedulePreview());
+  valueEl.addEventListener('input', ()=> schedulePreview());
+  row.querySelector('.filter-del').addEventListener('click',()=>{ row.remove(); schedulePreview(); });
+  schedulePreview();
+  }
+  document.getElementById('addFilterBtn').addEventListener('click',()=>addFilterRow());
+  // Hook groupBy change to re-render selection
+  document.getElementById('groupBy').addEventListener('change', renderSelection);
+  // modify submit to include filters and skip selection when payload group
+  const originalSubmit = window.submitReportBuilder || null;
+  // override existing submit function by redefining submit in this scope
+  // reuse existing form reference
+  async function submit(save, silent){
+    const fd = new FormData(form);
+    const body = { dateRange:{ from:new Date(fd.get('from')).toISOString(), to:new Date(fd.get('to')).toISOString() }, filters:[], groupBy: fd.get('groupBy'), aggregate: fd.get('aggregate'), valueField: (fd.get('valueField')||'')?fd.get('valueField'):undefined, interval: fd.get('interval'), chartType: fd.get('chartType'), save: !!save, name: fd.get('name')||undefined };
+    if(save) body.addToDashboard = true;
+    const groupVal = body.groupBy;
+    if(typeof groupVal === 'string' && !groupVal.startsWith('payload.')){
+      const selected = Array.from(document.querySelectorAll('#selectionBox .selBox:checked')).map(i=> i.value);
+      if(groupVal==='type') body.includeEvents=selected; else if(groupVal==='app') body.includeApps=selected;
+    }
+    document.querySelectorAll('#filtersBox .filter-row').forEach(r=>{
+      const field = r.querySelector('.filter-field').value;
+      const value = r.querySelector('.filter-value').value.trim();
+      if(field && value) body.filters.push({ field, op:'eq', value });
+    });
+    if(body.chartType==='number') body.interval='day';
+    // Skip duplicate preview bodies when silent
+    if(!save && silent){
+      if(lastPreviewBody && bodiesEqual(lastPreviewBody, body)) return; // no change
+      lastPreviewBody = body;
+    }
+    // Abort previous in-flight preview if any
+    if(!save && silent && inFlightController){ inFlightController.abort(); }
+    const controller = (!save && silent) ? new AbortController() : undefined;
+    if(controller) inFlightController = controller; else inFlightController = null;
+    const res = await fetch('/api/v1/reports/preview',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+    const data = await res.json();
+    if(!res.ok){ alert('Error: '+(data.error||res.status)); return; }
+    // render chart / table directly
+    if(data.chartType!=='number') renderChart(data); else {
+      // number card: show single value in table for now
+      document.getElementById('reportHead').innerHTML='';
+      document.getElementById('reportBody').innerHTML=`<tr><td class="fw-semibold display-6 text-center" colspan="4">${(data.total??data.value??'0')}</td></tr>`;
+      if(chart){ chart.destroy(); chart=null; }
+    }
+    if(!silent) renderTable(data);
+    // Render sample events if present
+    if(data.rawSamples){
+      const head = document.getElementById('sampleHead');
+      const body = document.getElementById('sampleBody');
+      const countEl = document.getElementById('sampleCount');
+      head.innerHTML=''; body.innerHTML='';
+      const columns = ['Time','Event','App','Group','Value','User','Session','Payload'];
+      columns.forEach(c=>{ const th=document.createElement('th'); th.textContent=c; head.appendChild(th); });
+      data.rawSamples.forEach(s=>{
+        const tr=document.createElement('tr');
+        const payloadStr = s.payloadPreview ? Object.entries(s.payloadPreview).map(([k,v])=>`${k}=${typeof v==='object'?JSON.stringify(v):v}`).join(', ') : '';
+        tr.innerHTML = `<td>${s.ts}</td><td>${s.type||''}</td><td>${s.app||''}</td><td>${s.group||''}</td><td>${s.value??''}</td><td>${s.userId||''}</td><td>${s.sessionId||''}</td><td class=\"text-truncate\" style=\"max-width:300px;\">${payloadStr}</td>`;
+        body.appendChild(tr);
+      });
+      countEl.textContent = `(${data.rawSamples.length})`;
+    }
+    if(data.savedReportId){ window.location='/?new='+encodeURIComponent(data.savedReportId); }
+  }
+  // attach buttons (assumes existing listeners removed)
+  form.addEventListener('submit', e=>{ e.preventDefault(); submit(false, false); });
+  document.getElementById('saveDashBtn').addEventListener('click', ()=> submit(true));
+  // after meta loaded add initial filter row
+  (async function(){ META = await fetch('/api/v1/events/meta').then(r=>r.ok?r.json():META); renderSelection(); populateValueFields(); addFilterRow(); schedulePreview(); })();
+})();
+</script>

@@ -1,0 +1,58 @@
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title><%= typeof title !== 'undefined' ? (title + ' | ' + appName) : appName %></title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<link href="/public/css/styles.css" rel="stylesheet" />
+<style>
+	.dash-highlight { animation: dashPulse 1s ease-in-out 0s 3 alternate; box-shadow:0 0 0 0.25rem rgba(25,135,84,.35)!important; }
+	@keyframes dashPulse { from { transform:scale(1); } to { transform:scale(1.02); } }
+	#dashList .dash-item { transition: box-shadow .2s ease, background-color .2s; }
+	#dashList .dash-item.dragging { opacity:.6; }
+
+	/* Canvas layout */
+	.dash-canvas { position:relative; width:100%; min-height:400px; background:transparent !important; }
+	.dash-card { position:absolute; box-sizing:border-box; transition: box-shadow var(--transition-base), transform var(--transition-base); }
+	.dash-card .card { height:100%; width:100%; box-shadow:var(--shadow-sm); }
+	.dash-card:hover .card { box-shadow:var(--shadow-md); }
+	.dash-resize { position:absolute; width:16px; height:16px; right:4px; bottom:4px; cursor:se-resize; background:rgba(0,0,0,0.25); border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; }
+	[data-theme="dark"] .dash-resize { background:rgba(255,255,255,0.35); }
+	.dash-moving { box-shadow:0 0 0 3px rgba(var(--accent-rgb),.45); z-index:30; }
+	.dash-resizing { box-shadow:0 0 0 3px rgba(220,53,69,.55); z-index:40; }
+	.dash-guides { position:absolute; inset:0; pointer-events:none; }
+	.dash-guide-col { position:absolute; top:0; bottom:0; width:1px; background:rgba(0,0,0,0.06); }
+	.dash-placeholder { position:absolute; background:rgba(13,110,253,.08); border:1px dashed rgba(13,110,253,.4); z-index:5; }
+	.dash-card .drag-handle { cursor:move; }
+	.dash-meta { position:absolute; left:8px; bottom:4px; font-size:10px; background:rgba(0,0,0,.55); color:#fff; padding:2px 6px; border-radius:4px; }
+	/* Drag grab icon styling */
+	.dash-card .drag-handle { cursor:grab; font-size:12px; line-height:1; padding:3px 6px; background:rgba(0,0,0,0.06); border-radius:6px; color:inherit; box-shadow:var(--shadow-xs); }
+	.dash-card .drag-handle:hover { background:rgba(0,0,0,0.14); }
+	.dash-card.dash-moving .drag-handle { cursor:grabbing; background:rgba(var(--accent-rgb),.35); color:#fff; }
+	[data-theme="dark"] .dash-card .drag-handle { background:rgba(255,255,255,0.09); }
+	[data-theme="dark"] .dash-card .drag-handle:hover { background:rgba(255,255,255,0.18); }
+
+	/* Dark mode overrides for accessibility (WCAG contrast) */
+	@media (prefers-color-scheme: dark) {
+		body, body * { color:#fff; }
+		.card { background:#1e293b; color:#fff; }
+		.card .text-muted, .text-muted { color:#cbd5e1 !important; }
+		.badge.bg-danger-subtle { background:#7f1d1d !important; color:#fecaca !important; border-color:#dc2626 !important; }
+		.dash-card .drag-handle { background:rgba(255,255,255,0.08); }
+		.dash-card .drag-handle:hover { background:rgba(255,255,255,0.18); }
+		.dash-resize { background:rgba(255,255,255,0.35); }
+	}
+	/* Explicit data-theme dark attribute support */
+	[data-theme="dark"] body, [data-theme="dark"] body * { color:#fff; }
+	[data-theme="dark"] .card { background:#1e293b; color:#fff; }
+	[data-theme="dark"] .card .text-muted, [data-theme="dark"] .text-muted { color:#cbd5e1 !important; }
+	[data-theme="dark"] .badge.bg-danger-subtle { background:#7f1d1d !important; color:#fecaca !important; border-color:#dc2626 !important; }
+	[data-theme="dark"] .dash-card .drag-handle { background:rgba(255,255,255,0.08); }
+	[data-theme="dark"] .dash-card .drag-handle:hover { background:rgba(255,255,255,0.18); }
+	[data-theme="dark"] .dash-resize { background:rgba(255,255,255,0.35); }
+	/* Focus visibility */
+	.dash-card .drag-handle:focus-visible, .refresh-btn:focus-visible { outline:2px solid #3b82f6; outline-offset:2px; }
+		.dash-full-width-wrapper { position:relative; width:100vw; margin-left:50%; left:-50vw; padding:0 1rem 2rem; }
+		@media (min-width:1400px){ .dash-full-width-wrapper { padding-left:2rem; padding-right:2rem; } }
+</style>

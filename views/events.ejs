@@ -1,0 +1,87 @@
+<div class="row">
+  <div class="col-md-3 mb-3">
+    <form id="filters" class="card card-body shadow-sm small">
+      <h6 class="text-uppercase fw-semibold mb-3">Filters</h6>
+      <div class="mb-2">
+        <label class="form-label">Type</label>
+        <input type="text" name="type" class="form-control form-control-sm" />
+      </div>
+      <div class="mb-2">
+        <label class="form-label">App</label>
+        <input type="text" name="app" class="form-control form-control-sm" />
+      </div>
+      <div class="mb-2">
+        <label class="form-label">User ID</label>
+        <input type="text" name="userId" class="form-control form-control-sm" />
+      </div>
+      <div class="mb-2">
+        <label class="form-label">From</label>
+        <input type="datetime-local" name="from" class="form-control form-control-sm" />
+      </div>
+      <div class="mb-2">
+        <label class="form-label">To</label>
+        <input type="datetime-local" name="to" class="form-control form-control-sm" />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Search (payload)</label>
+        <input type="text" name="search" class="form-control form-control-sm" placeholder="substring" />
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-primary w-100" type="submit">Apply</button>
+        <button class="btn btn-sm btn-outline-secondary w-100" id="resetFilters" type="button">Reset</button>
+      </div>
+      <a id="csvExport" class="btn btn-link btn-sm mt-2 p-0">Export CSV</a>
+    </form>
+  </div>
+  <div class="col-md-9">
+    <div class="table-responsive">
+      <table id="eventsTable" class="table table-sm table-striped align-middle">
+        <thead>
+          <tr>
+            <th>Occurred At</th>
+            <th>App</th>
+            <th>Type</th>
+            <th>User</th>
+            <th>Session</th>
+            <th>Payload</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script nonce="<%= cspNonce %>">
+(function(){
+  const form = document.getElementById('filters');
+  const tableBody = document.querySelector('#eventsTable tbody');
+  let page = 1;
+  const limit = 50; // still used if user later changes to paged mode (future enhancement)
+  async function load(){
+    const params = new URLSearchParams(new FormData(form));
+  params.set('page', page);
+  params.set('limit', limit);
+  params.set('all','1');
+    const res = await fetch('/api/v1/events?' + params.toString());
+    const data = await res.json();
+    tableBody.innerHTML='';
+    data.rows.forEach(ev => {
+      const tr = document.createElement('tr');
+      const payload = ev.payload || ev.properties || ev.payloadSnippet || ev.propertiesSnippet;
+      const pretty = payload ? JSON.stringify(payload).slice(0,120) : '';
+      tr.innerHTML = `<td>${new Date(ev.ts).toLocaleString()}</td><td>${ev.app||''}</td><td>${ev.type}</td><td>${ev.userId||''}</td><td>${ev.sessionId||''}</td><td><code class='small'>${pretty}</code></td>`;
+      tableBody.appendChild(tr);
+    });
+  }
+  form.addEventListener('submit', function(e){ e.preventDefault(); page=1; load(); updateCsvLink(); });
+  document.getElementById('resetFilters').addEventListener('click', ()=>{ form.reset(); page=1; load(); updateCsvLink(); });
+  function updateCsvLink(){
+    const params = new URLSearchParams(new FormData(form));
+    params.set('limit','500');
+    document.getElementById('csvExport').href = '/api/v1/events/export.csv?' + params.toString();
+  }
+  updateCsvLink();
+  load();
+})();
+</script>

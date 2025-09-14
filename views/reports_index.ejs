@@ -1,0 +1,39 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h5 mb-0">Reports</h1>
+  <a href="/reports/new" class="btn btn-sm btn-primary">New Report</a>
+</div>
+<% if (!reports.length) { %>
+  <div class="alert alert-info small">No reports yet. Create your first one.</div>
+<% } else { %>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+  <thead><tr><th>Name</th><th>Type</th><th>Created</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        <% reports.forEach(r => { %>
+          <tr>
+            <td><a href="/reports/<%= r.id %>"><%= r.name %></a></td>
+            <td class="small text-muted"><%= r.definition.chartType || 'line' %></td>
+            <td class="small text-muted"><%= new Date(r.createdAt).toLocaleString() %></td>
+            <td class="text-end d-flex gap-2 justify-content-end">
+              <a class="btn btn-sm btn-outline-secondary" href="/reports/<%= r.id %>">Open</a>
+              <button class="btn btn-sm btn-outline-primary add-dash" data-id="<%= r.id %>">Add</button>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <script nonce="<%= cspNonce %>">(function(){
+    document.querySelectorAll('.add-dash').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        btn.disabled=true; btn.textContent='…';
+        try {
+          const res = await fetch('/api/v1/dashboard/items',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ reportId: id }) });
+          if(!res.ok){ btn.disabled=false; btn.textContent='Add'; alert('Failed'); return; }
+          window.location = '/';
+        } catch { btn.disabled=false; btn.textContent='Add'; }
+      });
+    });
+  })();</script>
+<% } %>

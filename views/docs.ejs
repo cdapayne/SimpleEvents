@@ -1,0 +1,23 @@
+<div class="pb-3 border-bottom mb-4 d-flex justify-content-between align-items-center">
+  <h1 class="h3 mb-0">API Quickstart</h1>
+</div>
+<p class="lead">Use the Evently Analytics HTTP API to send events from your applications.</p>
+
+<h2 class="h5 mt-4">Base URL</h2>
+<pre><code><%= process.env.APP_BASE_URL || 'http://localhost:3000' %></code></pre>
+
+<h2 class="h5 mt-4">Example Event Payload</h2>
+<pre><code>{
+  "type": "user.signup",
+  "timestamp": "2025-01-01T00:00:00.000Z",
+  "userId": "123",
+  "properties": { "plan": "pro" }
+}</code></pre>
+
+<h2 class="h5 mt-4">cURL Example</h2>
+<pre><code>curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"type":"user.signup","timestamp":"2025-01-01T00:00:00.000Z","userId":"123","properties":{"plan":"pro"}}' \
+  <%= (process.env.APP_BASE_URL || 'http://localhost:3000') + '/events' %></code></pre>
+
+<p class="text-muted small">(Event ingestion endpoint not yet implemented.)</p>

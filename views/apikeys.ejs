@@ -1,0 +1,73 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+  <h1 class="h4 mb-0">API Keys</h1>
+  <div class="d-flex gap-2">
+    <form method="POST" action="/apikeys" class="d-flex gap-2">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input name="label" class="form-control form-control-sm" placeholder="Label" />
+      <button class="btn btn-sm btn-primary" type="submit">Create</button>
+    </form>
+    <form method="POST" action="/apikeys" class="d-flex">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="label" value="Generated" />
+      <button class="btn btn-sm btn-outline-secondary" type="submit">Generate Key</button>
+    </form>
+  </div>
+</div>
+<table class="table table-sm align-middle">
+  <thead>
+    <tr>
+      <th>Label</th>
+      <th>Key</th>
+      <th>Status</th>
+      <th>Created</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (!apiKeys.length) { %>
+      <tr>
+        <td colspan="5" class="text-muted small">
+          No API keys yet. Use the form above to create your first key. It will appear here and you can copy it for your SDK or cURL examples.
+        </td>
+      </tr>
+    <% } %>
+    <% apiKeys.forEach(k => { %>
+      <tr>
+        <td><%= k.label %></td>
+        <td>
+          <code class="small"><span class="masked" data-full="<%= k.key %>"><%= k.masked %></span></code>
+          <% if (k.active) { %>
+            <button type="button" class="btn btn-xs btn-outline-secondary btn-copy" data-key="<%= k.key %>">Copy</button>
+          <% } %>
+        </td>
+        <td>
+          <% if (k.active) { %>
+            <span class="badge bg-success">Active</span>
+          <% } else { %>
+            <span class="badge bg-secondary">Disabled</span>
+          <% } %>
+        </td>
+        <td class="small text-muted"><%= new Date(k.createdAt).toLocaleDateString() %></td>
+        <td class="text-end">
+          <% if (k.active) { %>
+            <form method="POST" action="/apikeys/<%= k.id %>/disable" class="d-inline">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="btn btn-sm btn-outline-danger" type="submit">Disable</button>
+            </form>
+          <% } %>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+<script nonce="<%= cspNonce %>">
+  document.addEventListener('click', function(e){
+    if(e.target.classList.contains('btn-copy')) {
+      const key = e.target.getAttribute('data-key');
+      navigator.clipboard.writeText(key).then(()=>{
+        e.target.textContent='Copied';
+        setTimeout(()=> e.target.textContent='Copy',1500);
+      });
+    }
+  });
+</script>

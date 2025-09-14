@@ -1,0 +1,48 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container-fluid">
+  <a class="navbar-brand" href="/">Evently</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+  <% if (typeof sessionUser !== 'undefined' && sessionUser) { %>
+          <li class="nav-item"><a class="nav-link <%= (title==='Dashboard') ? 'active' : '' %>" href="/">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link <%= (title==='Events') ? 'active' : '' %>" href="/events">Events</a></li>
+          <li class="nav-item"><a class="nav-link <%= (title==='Reports') ? 'active' : '' %>" href="/reports">Reports</a></li>
+          <li class="nav-item"><a class="nav-link <%= (title==='API Keys') ? 'active' : '' %>" href="/apikeys">API Keys</a></li>
+          <li class="nav-item"><a class="nav-link <%= (title==='Billing') ? 'active' : '' %>" href="/billing">Billing</a></li>
+          <li class="nav-item"><a class="nav-link <%= (title==='API Docs') ? 'active' : '' %>" href="/docs">Docs</a></li>
+        <% } else { %>
+          <li class="nav-item"><a class="nav-link <%= (title==='API Docs') ? 'active' : '' %>" href="/docs">Docs</a></li>
+        <% } %>
+      </ul>
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
+        <li class="nav-item me-2">
+          <button type="button" class="btn btn-sm btn-outline-light" id="themeToggle" aria-label="Toggle theme">🌙</button>
+        </li>
+  <% if (typeof sessionUser !== 'undefined' && sessionUser) { %>
+          <li class="nav-item d-flex align-items-center text-white-50 small me-2"><span><%= sessionUser.email %></span></li>
+          <li class="nav-item">
+            <form method="POST" action="/logout" class="d-inline">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="btn btn-sm btn-outline-light" type="submit">Logout</button>
+            </form>
+          </li>
+        <% } else { %>
+          <li class="nav-item"><a class="nav-link <%= (title==='Login') ? 'active' : '' %>" href="/login">Login</a></li>
+          <li class="nav-item"><a class="nav-link <%= (title==='Register') ? 'active' : '' %>" href="/register">Register</a></li>
+        <% } %>
+      </ul>
+    </div>
+  </div>
+</nav>
+<script nonce="<%= cspNonce %>">(function(){
+  const root = document.documentElement;
+  const key='se_theme_v1';
+  function apply(t){ if(t==='dark'){ root.setAttribute('data-theme','dark'); btn.textContent='☀️'; } else { root.removeAttribute('data-theme'); btn.textContent='🌙'; } }
+  const btn = document.getElementById('themeToggle');
+  let current = localStorage.getItem(key) || 'light';
+  apply(current);
+  btn.addEventListener('click',()=>{ current = current==='dark'?'light':'dark'; localStorage.setItem(key,current); apply(current); });
+})();</script>

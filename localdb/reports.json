@@ -1,0 +1,265 @@
+[
+  {
+    "id": "00b91811-46ca-4469-81fe-19998836b1d0",
+    "accountId": "76c9bdd3-ea37-4cbe-82e0-e2896f3ffc38",
+    "name": "Noads",
+    "definition": {
+      "dateRange": {
+        "from": "2025-09-06T07:05:00.000Z",
+        "to": "2025-09-13T07:05:00.000Z"
+      },
+      "filters": [],
+      "groupBy": "type",
+      "aggregate": "sum",
+      "interval": "day",
+      "chartType": "bar"
+    },
+    "createdAt": "2025-09-13T03:05:50.237Z"
+  },
+  {
+    "id": "b0d9d68e-6b1d-4a7b-8e39-e60239c752a6",
+    "accountId": "76c9bdd3-ea37-4cbe-82e0-e2896f3ffc38",
+    "name": "reportsx",
+    "definition": {
+      "dateRange": {
+        "from": "2025-09-06T15:32:00.000Z",
+        "to": "2025-09-13T15:32:00.000Z"
+      },
+      "filters": [],
+      "groupBy": "type",
+      "aggregate": "count",
+      "interval": "day",
+      "chartType": "line",
+      "includeEvents": [
+        "test.event"
+      ]
+    },
+    "createdAt": "2025-09-13T11:33:09.121Z"
+  },
+  {
+    "id": "dc05dc8f-579b-471f-8870-44087483e224",
+    "accountId": "76c9bdd3-ea37-4cbe-82e0-e2896f3ffc38",
+    "name": "testvv",
+    "definition": {
+      "dateRange": {
+        "from": "2025-09-06T15:40:00.000Z",
+        "to": "2025-09-13T15:40:00.000Z"
+      },
+      "filters": [],
+      "groupBy": "type",
+      "aggregate": "count",
+      "interval": "day",
+      "chartType": "line",
+      "includeEvents": [
+        "test.event"
+      ]
+    },
+    "createdAt": "2025-09-13T11:41:11.348Z"
+  },
+  {
+    "id": "d2ef5e71-bb98-4963-bb21-2c85798243f4",
+    "accountId": "76c9bdd3-ea37-4cbe-82e0-e2896f3ffc38",
+    "name": "Noads",
+    "definition": {
+      "dateRange": {
+        "from": "2025-09-10T15:41:00.000Z",
+        "to": "2025-09-13T15:41:00.000Z"
+      },
+      "filters": [],
+      "groupBy": "type",
+      "aggregate": "count",
+      "interval": "day",
+      "chartType": "line",
+      "includeEvents": [
+        "test.event"
+      ]
+    },
+    "createdAt": "2025-09-13T11:41:37.999Z"
+  },
+  {
+    "id": "a9b2fcf7-3da0-4ff0-bd0c-c00b1ad6be5d",
+    "accountId": "76c9bdd3-ea37-4cbe-82e0-e2896f3ffc38",
+    "name": "test",
+    "definition": {
+      "dateRange": {
+        "from": "2025-09-06T15:47:00.000Z",
+        "to": "2025-09-13T15:47:00.000Z"
+      },
+      "filters": [],
+      "groupBy": "type",
+      "aggregate": "count",
+      "interval": "day",
+      "chartType": "line",
+      "includeEvents": [
+        "test.event"
+      ]
+    },
+    "createdAt": "2025-09-13T11:47:09.842Z"
+  },
+  {
+    "id": "fcf34400-fcff-4557-8824-2185de99777e",
+    "accountId": "76c9bdd3-ea37-4cbe-82e0-e2896f3ffc38",
+    "name": "wfgwe",
+    "definition": {
+      "dateRange": {
+        "from": "2025-08-14T15:48:00.000Z",
+        "to": "2025-09-13T15:48:00.000Z"
+      },
+      "filters": [],
+      "groupBy": "type",
+      "aggregate": "count",
+      "interval": "day",
+      "chartType": "line",
+      "includeEvents": [
+        "test.event"
+      ]
+    },
+    "createdAt": "2025-09-13T11:48:45.640Z"
+  },
+  {
+    "id": "bbb2f453-d776-426d-beea-ae3e7e1488b8",
+    "accountId": "76c9bdd3-ea37-4cbe-82e0-e2896f3ffc38",
+    "name": "qdqwd",
+    "definition": {
+      "dateRange": {
+        "from": "2025-09-06T15:49:00.000Z",
+        "to": "2025-09-13T15:49:00.000Z"
+      },
+      "filters": [],
+      "groupBy": "type",
+      "aggregate": "count",
+      "interval": "day",
+      "chartType": "line",
+      "includeEvents": [
+        "test.event"
+      ]
+    },
+    "createdAt": "2025-09-13T11:49:37.448Z"
+  },
+  {
+    "id": "f9f28ca7-193c-4edd-b3f5-fc067c71b880",
+    "accountId": "76c9bdd3-ea37-4cbe-82e0-e2896f3ffc38",
+    "name": "wefw",
+    "definition": {
+      "dateRange": {
+        "from": "2025-09-06T15:52:00.000Z",
+        "to": "2025-09-13T15:52:00.000Z"
+      },
+      "filters": [],
+      "groupBy": "type",
+      "aggregate": "count",
+      "interval": "day",
+      "chartType": "line",
+      "includeEvents": [
+        "test.event"
+      ]
+    },
+    "createdAt": "2025-09-13T11:52:57.033Z"
+  },
+  {
+    "id": "dd3692fe-bd8f-4141-9efe-33458646dbe5",
+    "accountId": "76c9bdd3-ea37-4cbe-82e0-e2896f3ffc38",
+    "name": "wefe",
+    "definition": {
+      "dateRange": {
+        "from": "2025-09-06T16:05:00.000Z",
+        "to": "2025-09-13T16:05:00.000Z"
+      },
+      "filters": [],
+      "groupBy": "type",
+      "aggregate": "count",
+      "interval": "day",
+      "chartType": "line",
+      "includeEvents": [
+        "test.event"
+      ]
+    },
+    "createdAt": "2025-09-13T12:05:23.766Z"
+  },
+  {
+    "id": "e23cc000-5cb3-48d8-b4e9-23378623f28a",
+    "accountId": "76c9bdd3-ea37-4cbe-82e0-e2896f3ffc38",
+    "name": "test",
+    "definition": {
+      "dateRange": {
+        "from": "2025-09-06T16:08:00.000Z",
+        "to": "2025-09-13T16:08:00.000Z"
+      },
+      "filters": [],
+      "groupBy": "type",
+      "aggregate": "count",
+      "interval": "day",
+      "chartType": "line",
+      "includeEvents": [
+        "test.event"
+      ]
+    },
+    "createdAt": "2025-09-13T12:08:17.597Z"
+  },
+  {
+    "id": "afa8fdfe-2ba0-46d5-90e5-16f54964bf9b",
+    "accountId": "76c9bdd3-ea37-4cbe-82e0-e2896f3ffc38",
+    "name": "kjjkjk",
+    "definition": {
+      "dateRange": {
+        "from": "2025-09-06T22:06:00.000Z",
+        "to": "2025-09-13T22:06:00.000Z"
+      },
+      "filters": [
+        {
+          "field": "payload.text",
+          "op": "eq",
+          "value": "event processed"
+        }
+      ],
+      "groupBy": "type",
+      "aggregate": "count",
+      "interval": "day",
+      "chartType": "line",
+      "includeEvents": [
+        "test.event"
+      ]
+    },
+    "createdAt": "2025-09-13T18:13:07.694Z"
+  },
+  {
+    "id": "8577e36d-07a7-416f-87e9-6124363856af",
+    "accountId": "76c9bdd3-ea37-4cbe-82e0-e2896f3ffc38",
+    "name": "all",
+    "definition": {
+      "dateRange": {
+        "from": "2025-09-06T22:14:00.000Z",
+        "to": "2025-09-13T22:14:00.000Z"
+      },
+      "filters": [],
+      "groupBy": "type",
+      "aggregate": "count",
+      "interval": "day",
+      "chartType": "line",
+      "includeEvents": [
+        "test.event"
+      ]
+    },
+    "createdAt": "2025-09-13T18:14:32.439Z"
+  },
+  {
+    "id": "fca3d414-a289-41f4-8a35-5118a1bcda5c",
+    "accountId": "76c9bdd3-ea37-4cbe-82e0-e2896f3ffc38",
+    "name": "nums",
+    "definition": {
+      "dateRange": {
+        "from": "2025-09-07T02:23:00.000Z",
+        "to": "2025-09-14T02:23:00.000Z"
+      },
+      "filters": [],
+      "groupBy": "type",
+      "aggregate": "count",
+      "interval": "day",
+      "chartType": "number",
+      "includeEvents": [
+        "test.event"
+      ]
+    },
+    "createdAt": "2025-09-13T22:23:17.825Z"
+  }
+]

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "7179770b-b695-42a4-a484-8594b1d2ef89",
+    "accountId": "b8016d7b-fd6a-4233-bfa1-9a066d2fdaf1",
+    "events": 1,
+    "eventsIngested": 1
+  },
+  {
+    "id": "6c18cdc5-9bdb-490a-b8ef-9af6e0ae579b",
+    "accountId": "76c9bdd3-ea37-4cbe-82e0-e2896f3ffc38",
+    "periodStart": "2025-09-13T01:39:05.240Z",
+    "periodEnd": "2025-09-27T01:39:05.240Z",
+    "events": 28,
+    "eventsIngested": 28
+  }
+]

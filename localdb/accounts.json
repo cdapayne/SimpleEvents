@@ -1,0 +1,15 @@
+[
+  {
+    "id": "b8016d7b-fd6a-4233-bfa1-9a066d2fdaf1",
+    "name": "Demo Account",
+    "createdAt": "2025-09-13T00:58:41.382Z"
+  },
+  {
+    "id": "76c9bdd3-ea37-4cbe-82e0-e2896f3ffc38",
+    "name": "carlton.payne's Account",
+    "createdAt": "2025-09-13T01:39:05.240Z",
+    "plan": "TRIAL",
+    "currentPeriodStart": "2025-09-13T01:39:05.240Z",
+    "currentPeriodEnd": "2025-09-27T01:39:05.240Z"
+  }
+]

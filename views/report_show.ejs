@@ -1,0 +1,51 @@
+<div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
+  <h1 class="h5 mb-0"><%= report.name %></h1>
+  <div class="d-flex gap-2">
+    <button class="btn btn-sm btn-outline-primary" id="addDashBtn" title="Add this report to your dashboard">Add to Dashboard</button>
+    <a href="/reports/new" class="btn btn-sm btn-outline-secondary">New Report</a>
+  </div>
+</div>
+<div class="card shadow-sm mb-3"><div class="card-body">
+  <canvas id="reportChart" height="140"></canvas>
+  <div id="numberView" class="display-4 fw-semibold text-primary" style="display:none"></div>
+</div></div>
+<div class="table-responsive" id="tableWrap">
+  <table class="table table-sm" id="reportTable">
+    <thead><tr id="reportHead"></tr></thead>
+    <tbody id="reportBody"></tbody>
+  </table>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script nonce="<%= cspNonce %>">
+(async function(){
+  const reportId = '<%= report.id %>';
+  const def = JSON.parse(atob("<%= Buffer.from(JSON.stringify(report.definition)).toString('base64') %>"));
+  // Call preview API with saved definition (without saving again)
+  const res = await fetch('/api/v1/reports/preview', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ...def, save:false, dateRange: def.dateRange }) });
+  const data = await res.json();
+  if(!res.ok){ alert('Error loading report'); return; }
+  const ctx = document.getElementById('reportChart').getContext('2d');
+  if(data.chartType==='number') {
+    document.getElementById('reportChart').style.display='none';
+    document.getElementById('tableWrap').style.display='none';
+    document.getElementById('numberView').style.display='';
+    document.getElementById('numberView').textContent = (data.value||0).toLocaleString();
+  } else {
+  const realType = data.chartType === 'area' ? 'line' : data.chartType;
+  const chart = new Chart(ctx, { type: realType, data: { labels: data.labels, datasets: data.datasets.map(d=>({label:d.label,data:d.data,borderWidth:1, fill: data.chartType==='area', tension: data.chartType==='area'?0.35:0})) }, options:{ responsive:true, scales: (realType==='pie'||realType==='doughnut'||realType==='radar'||realType==='polarArea')?{}:{ y:{ beginAtZero:true } } }});
+    const head = document.getElementById('reportHead');
+    const body = document.getElementById('reportBody');
+    data.table.columns.forEach(c=>{ const th=document.createElement('th'); th.textContent=c; head.appendChild(th); });
+    data.table.rows.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${r.group}</td>` + r.values.map(v=>`<td>${v}</td>`).join(''); body.appendChild(tr); });
+  }
+  document.getElementById('addDashBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('addDashBtn');
+    btn.disabled = true; btn.textContent='Adding…';
+    try {
+      const res = await fetch('/api/v1/dashboard/items',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ reportId }) });
+      if(!res.ok){ btn.disabled=false; btn.textContent='Add to Dashboard'; alert('Failed'); return; }
+      window.location = '/';
+    } catch(e){ btn.disabled=false; btn.textContent='Add to Dashboard'; }
+  });
+})();
+</script>

@@ -1,0 +1,424 @@
+<div class="pb-3 border-bottom mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <div class="d-flex align-items-center gap-3">
+    <h1 class="h3 mb-0">Dashboard</h1>
+    <button class="btn btn-outline-secondary btn-sm" id="toggleOverviewBtn" type="button" title="Hide overview section">Hide Overview</button>
+  </div>
+  <form method="POST" action="/demo" class="d-none"> <!-- placeholder for a CSRF protected form -->
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  </form>
+</div>
+<div id="overviewRow" class="row g-4">
+  <div class="col-md-6 col-lg-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title d-flex justify-content-between align-items-center">Getting Started <span class="badge bg-primary">New</span></h5>
+        <ol class="small ps-3 mb-3" id="onboardSteps">
+          <li data-step="key">Create an API Key <a href="/apikeys" class="ms-1">Open</a></li>
+          <li data-step="event">Send a Test Event <button class="btn btn-link btn-sm p-0" data-bs-toggle="modal" data-bs-target="#testEventModal">Send</button></li>
+          <li data-step="view">View Events <a href="/events" class="ms-1">Go</a></li>
+          <li data-step="report">Build a Report <a href="/reports/new" class="ms-1">Build</a></li>
+        </ol>
+        <div class="alert alert-info small mb-0" id="onboardHint">Complete the steps above to finish setup.</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Events Tracked</h5>
+        <p class="display-6 fw-semibold text-primary"><%= eventsCount %></p>
+        <p class="text-muted small mb-0">Across <%= accountsCount %> account(s).</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Plan Usage</h5>
+        <p class="mb-1 small text-muted"><%= plan.name %></p>
+        <% if (isFinite(limit)) { %>
+        <div class="progress mb-2" style="height: 16px;">
+          <div class="progress-bar <%= nearLimit ? 'bg-danger' : 'bg-success' %>" role="progressbar" data-percent="<%= percent %>" aria-valuenow="<%= percent %>" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <p class="small mb-0"><%= usage.events %> / <%= limit.toLocaleString() %> events (<%= percent %>%)</p>
+        <% } else { %>
+        <p class="h5 mb-0">Unlimited</p>
+        <% } %>
+        <% if (nearLimit) { %>
+        <div class="alert alert-warning mt-3 p-2 small mb-0">You're at <%= percent %>% of your event quota.</div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Users</h5>
+        <p class="display-6 fw-semibold text-primary"><%= usersCount %></p>
+        <p class="text-muted small mb-0">Seed demo owner included.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Last Ingest</h5>
+        <p class="display-6 fw-semibold text-primary">Recent</p>
+        <p class="text-muted small mb-0">Events generated on seed.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mt-5 dash-full-width-wrapper">
+  <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-3">
+      <h2 class="h5 mb-0">My Dashboard</h2>
+      <div class="btn-group btn-group-sm">
+        <button class="btn btn-primary" id="addReportBtn" title="Add existing reports"><span class="fw-bold">＋</span></button>
+        <button class="btn btn-outline-secondary" id="packLayoutBtn" title="Pack & Randomize Layout">⇆</button>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <small class="text-muted">Drag & resize cards. Layout auto-saves.</small>
+    </div>
+  </div>
+  <div id="dashList" class="dash-canvas w-100"></div>
+</div>
+
+<!-- Add Reports Modal -->
+<div class="modal fade" id="addReportsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Add Reports to Dashboard</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div id="reportsList" class="d-flex flex-column gap-2 small"></div>
+        <div class="text-muted small mt-2" id="reportsHint">Select reports to add.</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button class="btn btn-sm btn-primary" id="addSelectedReportsBtn" disabled>Add Selected</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Removed GridStack; using SortableJS for simple vertical drag -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+
+<!-- Test Event Modal -->
+<div class="modal fade" id="testEventModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Send a Test Event</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <p class="small text-muted">Use one of the examples below to send a quick event. Replace values as needed.</p>
+        <ul class="nav nav-tabs mb-3" role="tablist">
+          <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#curlTab" type="button">cURL</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#jsTab" type="button">JavaScript</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#pyTab" type="button">Python</button></li>
+        </ul>
+        <div class="tab-content small">
+          <div class="tab-pane fade show active" id="curlTab">
+            <pre class="bg-light p-2 border small" id="curlSnippet"></pre>
+          </div>
+          <div class="tab-pane fade" id="jsTab">
+            <pre class="bg-light p-2 border small" id="jsSnippet"></pre>
+          </div>
+            <div class="tab-pane fade" id="pyTab">
+            <pre class="bg-light p-2 border small" id="pySnippet"></pre>
+          </div>
+        </div>
+  <button class="btn btn-sm btn-primary" id="sendFromBrowser">Send From Browser</button>
+  <div class="text-muted small mt-2">Each send includes a random sample phrase.</div>
+        <span id="testEventStatus" class="small ms-2"></span>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button></div>
+    </div>
+  </div>
+</div>
+
+<script nonce="<%= cspNonce %>">
+  document.querySelectorAll('.progress-bar[data-percent]')?.forEach(function(el){
+    var p = el.getAttribute('data-percent');
+    if(p) el.style.width = p + '%';
+  });
+  (function(){
+  const apiKey = '<%= (apiKey || "") %>';
+    const curl = `curl -X POST -H "Content-Type: application/json" -H "X-API-Key: ${apiKey}" -d '{"app":"demo","type":"test.event","payload":{"source":"curl"}}' <%= (process.env.APP_BASE_URL||'http://localhost:3000') %>/api/v1/events/ingest`;
+    const js = `fetch('<%= (process.env.APP_BASE_URL||'http://localhost:3000') %>/api/v1/events/ingest',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':'${apiKey}'},body:JSON.stringify({app:'demo',type:'test.event',payload:{source:'js'}})}).then(r=>r.json()).then(console.log);`;
+    const py = `import requests, json\nprint(requests.post('<%= (process.env.APP_BASE_URL||'http://localhost:3000') %>/api/v1/events/ingest',headers={'X-API-Key':'${apiKey}'},json={'app':'demo','type':'test.event','payload':{'source':'python'}}).json())`;
+    document.getElementById('curlSnippet').textContent = curl;
+    document.getElementById('jsSnippet').textContent = js;
+    document.getElementById('pySnippet').textContent = py;
+    const btn = document.getElementById('sendFromBrowser');
+    async function ensureSwal(){
+      if (window.Swal) return true;
+      return new Promise(resolve => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+        s.onload = () => resolve(true);
+        s.onerror = () => resolve(false);
+        document.head.appendChild(s);
+      });
+    }
+    const phrases = [
+      'alpha launch',
+      'beta signup',
+      'user activated',
+      'plan upgraded',
+      'quota nearing',
+      'feature clicked',
+      'dashboard view',
+      'event processed'
+    ];
+    function randomPhrase(){ return phrases[Math.floor(Math.random()*phrases.length)]; }
+    btn.addEventListener('click', async ()=>{
+      const payload = {app:'demo',type:'test.event',payload:{origin:'browser', text: randomPhrase()}};
+      let res, out;
+      try {
+        res = await fetch('/api/v1/events/ingest',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':apiKey},body:JSON.stringify(payload)});
+        out = await res.json();
+        const success = res.ok;
+        document.getElementById('testEventStatus').textContent = success ? 'Sent ✔' : ('Error: '+(out.error||res.status));
+        await ensureSwal();
+        if (window.Swal) {
+          if (success) {
+            Swal.fire({
+              title: 'Test event sent',
+              icon: 'success',
+              html: '<p class="small text-start mb-2">Payload:</p><pre class="text-start bg-light p-2 border rounded small mb-0">'+
+                document.createTextNode(JSON.stringify(payload,null,2)).textContent + '</pre>',
+              confirmButtonText: 'Close'
+            });
+          } else {
+            Swal.fire({
+              title: 'Send failed',
+              icon: 'error',
+              text: (out && out.error) ? out.error : ('Status '+res.status),
+              confirmButtonText: 'Close'
+            });
+          }
+        }
+      } catch(err){
+        document.getElementById('testEventStatus').textContent = 'Error';
+        await ensureSwal();
+        if (window.Swal) {
+          Swal.fire({ title: 'Network error', icon: 'error', text: String(err), confirmButtonText: 'Close' });
+        }
+      }
+    });
+  })();
+  // Dashboard canvas logic (custom drag/resize)
+  (function(){
+    const canvas = document.getElementById('dashList');
+    if(!canvas) return;
+  const MIN_W = 240; const MIN_H = 160; const GAP = 8; // freeform gap only
+  window.addEventListener('resize', ()=>{ /* no snapping; only ensure items within canvas width */ constrainWithin(); });
+  let saveTimer; const state = { items: [] }; const liveState = { charts:{}, chartObjs:{} };
+  let numberScaleTimer;
+  function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+  function isDark(){ return document.documentElement.getAttribute('data-theme')==='dark' || window.matchMedia('(prefers-color-scheme: dark)').matches; }
+  function rethemeCharts(){ const dark=isDark(); const textColor = dark ? '#fff' : (cssVar('--text-color')||'#1a1f29'); const gridColor = dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'; Object.values(liveState.chartObjs).forEach(ch=>{ if(!ch) return; if(ch.options?.plugins?.legend?.labels) ch.options.plugins.legend.labels.color=textColor; const scales=ch.options.scales; if(scales){ if(scales.x){ if(scales.x.ticks) scales.x.ticks.color=textColor; if(scales.x.grid) scales.x.grid.color=gridColor; } if(scales.y){ if(scales.y.ticks) scales.y.ticks.color=textColor; if(scales.y.grid) scales.y.grid.color=gridColor; } } ch.update(); }); }
+  // Observe theme attribute changes
+  new MutationObserver(m=>{ if(m.some(x=>x.attributeName==='data-theme')) rethemeCharts(); }).observe(document.documentElement,{ attributes:true });
+  // Listen to system preference changes
+  try { const mql = window.matchMedia('(prefers-color-scheme: dark)'); if(mql.addEventListener) mql.addEventListener('change', rethemeCharts); else if(mql.addListener) mql.addListener(rethemeCharts); } catch {}
+    function log(...a){ console.log('[dash]', ...a); }
+    async function fetchItems(){ const r= await fetch('/api/v1/dashboard/items'); if(!r.ok) throw new Error('fetch_fail'); const j= await r.json(); return (j.items||[]).filter(i=>i.report); }
+    function px(v){ return Math.round(v); }
+  function itemRect(it){ return { left: it.pxX ?? 0, top: it.pxY ?? 0, width: it.pxW ?? (it.w? it.w*200 : 400), height: it.pxH ?? (it.h? it.h*140 : 300) }; }
+    function renderItem(it){
+      const wrap = document.createElement('div'); wrap.className='dash-card'; wrap.dataset.id=it.id;
+  const r = itemRect(it); wrap.style.left=px(r.left)+'px'; wrap.style.top=px(r.top)+'px'; wrap.style.width=px(r.width)+'px'; wrap.style.height=px(r.height)+'px';
+      wrap.innerHTML = `<div class=\"card shadow-sm h-100\">\
+        <div class=\"card-body p-2 d-flex flex-column h-100\">\
+          <div class=\"d-flex justify-content-between align-items-start mb-2 gap-2 position-relative\">\
+            <div class=\"d-flex flex-column flex-grow-1 pe-4\">\
+              <div class=\"d-flex align-items-center gap-2\">\
+                <h6 class=\"mb-0 small\">${it.report.name}</h6>\
+                <span class=\"badge bg-danger-subtle text-danger border border-danger-subtle live-badge d-none\" style=\"font-size:0.6rem;letter-spacing:.5px;\">LIVE</span>\
+                <button class=\"btn btn-light btn-sm p-0 px-1 border refresh-btn\" type=\"button\" title=\"Refresh now\" style=\"font-size:.65rem;\">↻</button>\
+              </div>\
+              <span class=\"text-muted small mt-1 last-updated d-none\"></span>\
+            </div>\
+            <div class=\"drag-handle position-absolute top-0 end-0 me-1 mt-1 text-muted\" title=\"Drag\" style=\"cursor:grab;user-select:none;\">☰</div>\
+          </div>\
+          <div class=\"flex-grow-1 d-flex align-items-center justify-content-center overflow-hidden\" data-report-id=\"${it.report.id}\"><span class=\"text-muted small\">Loading…</span></div>\
+          <div class=\"dash-resize\">⋰</div>\
+          <div class=\"dash-meta d-none\"></div>\
+        </div>\
+      </div>`;
+      canvas.appendChild(wrap);
+      const holder = wrap.querySelector('[data-report-id]');
+      wrap.querySelector('.refresh-btn')?.addEventListener('click', ()=> refreshOne(holder, true));
+      enableDrag(wrap); enableResize(wrap);
+    }
+  function layoutAll(){ state.items.forEach(it=>{ const el=canvas.querySelector(`[data-id="${it.id}"]`); if(!el) return; const r=itemRect(it); el.style.left=px(r.left)+'px'; el.style.top=px(r.top)+'px'; el.style.width=px(r.width)+'px'; el.style.height=px(r.height)+'px'; }); resizeCanvasHeight(); scheduleNumberScale(); }
+  function scheduleNumberScale(){ clearTimeout(numberScaleTimer); numberScaleTimer=setTimeout(scaleNumbers, 25); }
+  function scaleNumbers(){ const nodes = canvas.querySelectorAll('.number-value'); nodes.forEach(el=>{ const card = el.closest('.dash-card'); if(!card) return; const w=card.offsetWidth||200; const h=card.offsetHeight||200; const base=Math.min(w,h); let size = base*0.5; if(base>500) size = base*0.42; size = Math.max(28, Math.min(size, 220)); el.style.fontSize=size+'px'; el.style.lineHeight='1.05'; el.style.whiteSpace='nowrap'; el.style.overflow='hidden'; el.style.textOverflow='ellipsis'; }); }
+  function resizeCanvasHeight(){ const maxBottom = Math.max(0, ...state.items.map(i=> ( (i.pxY||0) + (i.pxH||300) ))); canvas.style.height = (maxBottom + GAP)+'px'; }
+  function saveLayout(){ clearTimeout(saveTimer); saveTimer=setTimeout(async()=>{ try { await fetch('/api/v1/dashboard/items',{ method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ items: state.items.map(i=>({ id:i.id, pxX:i.pxX||0, pxY:i.pxY||0, pxW:i.pxW||MIN_W, pxH:i.pxH||MIN_H })) }) }); } catch(e){ log('save fail',e); } }, 600); }
+  function constrainWithin(){ const width = canvas.clientWidth; state.items.forEach(it=>{ if((it.pxX||0) + (it.pxW||MIN_W) > width) it.pxX = Math.max(0, width - (it.pxW||MIN_W)); }); layoutAll(); }
+    async function renderCharts(){
+      const holders = canvas.querySelectorAll('[data-report-id]');
+      for (const holder of holders){
+        const reportId = holder.getAttribute('data-report-id');
+        if(!reportId) continue;
+        try {
+          const res = await fetch('/api/v1/reports/preview', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(await buildBody(reportId)) });
+          const data = await res.json();
+          holder.innerHTML='';
+            if(!res.ok){ holder.textContent='Error'; continue; }
+            if(data.chartType==='number'){
+              const v=document.createElement('div'); v.className='number-value fw-semibold text-primary'; v.textContent=(data.value||0).toLocaleString(); holder.appendChild(v); scheduleNumberScale();
+            } else {
+              const c=document.createElement('canvas'); holder.appendChild(c); const ctx=c.getContext('2d');
+              const type=data.chartType==='area'?'line':data.chartType;
+              const darkMode = isDark();
+              const textColor = darkMode ? '#fff' : (cssVar('--text-color')||'#1a1f29');
+              const gridColor = darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
+              const chartInstance = new Chart(ctx, {
+                type,
+                data: {
+                  labels: data.labels,
+                  datasets: data.datasets.map(d => ({
+                    label: d.label,
+                    data: d.data,
+                    fill: data.chartType==='area',
+                    tension: data.chartType==='area'?0.35:0,
+                    borderWidth:1
+                  }))
+                },
+                options: {
+                  responsive:true,
+                  maintainAspectRatio:false,
+                  plugins: {
+                    legend: { labels: { color: textColor } },
+                    tooltip: { titleColor: textColor, bodyColor: textColor }
+                  },
+                  scales: (['pie','doughnut','radar','polarArea'].includes(type)) ? {} : { 
+                    x: { ticks: { color: textColor }, grid: { color: gridColor } },
+                    y: { beginAtZero:true, ticks: { color: textColor }, grid: { color: gridColor } }
+                  }
+                }
+              });
+              liveState.chartObjs[reportId]=chartInstance;
+              c.style.height='100%';
+            }
+        } catch(e){ holder.textContent='Error'; }
+      }
+    }
+    function hashData(d){ try { return btoa(unescape(encodeURIComponent(JSON.stringify({l:d.labels,ds:d.datasets?.map(x=>x.data),v:d.value})))).slice(0,40); } catch{ return Math.random().toString(36).slice(2); } }
+    function formatTime(ts){ const d=new Date(ts); if(isNaN(d.getTime())) return ''; return d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit'});} function updateRelativeTimes(){ document.querySelectorAll('.last-updated[data-updated-at]').forEach(el=>{ const at=parseInt(el.getAttribute('data-updated-at')||'0',10); if(!at) return; const diff=Date.now()-at; let txt; if(diff<5000) txt='Just now'; else if(diff<60000) txt=Math.floor(diff/1000)+'s ago'; else if(diff<3600000) txt=Math.floor(diff/60000)+'m ago'; else txt=formatTime(at); el.textContent='Updated '+txt; }); }
+    setInterval(updateRelativeTimes, 5000);
+    async function refreshOne(holder, force){
+      const reportId = holder.getAttribute('data-report-id');
+      if(!reportId) return;
+      try {
+        const res = await fetch(`/api/v1/reports/${reportId}/run?live=1`);
+        if(!res.ok) return;
+        const data = await res.json();
+        const prev = liveState.charts[reportId];
+        const h = hashData(data);
+        if(!force && prev && prev.hash === h) return;
+        holder.innerHTML='';
+        if(data.chartType==='number'){
+          const div=document.createElement('div'); div.className='number-value fw-semibold text-primary'; div.textContent=(data.value||0).toLocaleString(); holder.appendChild(div); scheduleNumberScale();
+        } else {
+          const canvasEl=document.createElement('canvas'); holder.appendChild(canvasEl); const ctx=canvasEl.getContext('2d');
+          const type=data.chartType==='area'?'line':data.chartType;
+          const darkMode = isDark();
+          const textColor = darkMode ? '#fff' : (cssVar('--text-color')||'#1a1f29');
+          const gridColor = darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
+          const chartInstance = new Chart(ctx, {
+            type,
+            data: {
+              labels: data.labels,
+              datasets: data.datasets.map(d => ({
+                label: d.label,
+                data: d.data,
+                fill: data.chartType==='area',
+                tension: data.chartType==='area'?0.35:0,
+                borderWidth:1
+              }))
+            },
+            options: {
+              responsive:true,
+              maintainAspectRatio:false,
+              plugins: {
+                legend: { labels: { color: textColor } },
+                tooltip: { titleColor: textColor, bodyColor: textColor }
+              },
+              scales: (['pie','doughnut','radar','polarArea'].includes(type)) ? {} : { 
+                x: { ticks: { color: textColor }, grid: { color: gridColor } },
+                y: { beginAtZero:true, ticks: { color: textColor }, grid: { color: gridColor } }
+              }
+            }
+          });
+          liveState.chartObjs[reportId]=chartInstance;
+          canvasEl.style.height='100%';
+        }
+        liveState.charts[reportId] = { hash:h, at:Date.now() };
+        const card = holder.closest('.card');
+        if(card){
+          const badge = card.querySelector('.live-badge'); if(badge) badge.classList.remove('d-none');
+          const tsEl = card.querySelector('.last-updated'); if(tsEl){ tsEl.classList.remove('d-none'); tsEl.setAttribute('data-updated-at', String(Date.now())); updateRelativeTimes(); }
+        }
+      } catch(e){}
+    }
+    async function liveRefreshAll(){ const holders=canvas.querySelectorAll('[data-report-id]'); for(const h of holders){ await refreshOne(h,false); } }
+    function startPolling(){ setInterval(liveRefreshAll, 300000); }
+    async function buildBody(reportId){ if(!window.__reportDefs) window.__reportDefs={}; if(window.__reportDefs[reportId]) return { ...window.__reportDefs[reportId], save:false }; try { const res=await fetch('/api/v1/reports/'+reportId+'/definition'); if(res.ok){ const json=await res.json(); window.__reportDefs[reportId]=json.definition||{}; } } catch{} if(!window.__reportDefs[reportId]) window.__reportDefs[reportId]={ dateRange:{ from:new Date(Date.now()-7*86400000).toISOString(), to:new Date().toISOString() }, groupBy:'type', aggregate:'count', interval:'day', chartType:'number', filters:[] }; return { ...window.__reportDefs[reportId], save:false }; }
+    function enableDrag(el){ const handle=el.querySelector('.drag-handle'); if(!handle) return; let startX,startY,startLeft,startTop,itemRef; function onDown(e){ if(e.button===2) return; if(e.type==='mousedown' || e.type==='touchstart'){ e.preventDefault(); } const rect=el.getBoundingClientRect(); const cRect=canvas.getBoundingClientRect(); startX=(e.touches?e.touches[0].clientX:e.clientX); startY=(e.touches?e.touches[0].clientY:e.clientY); startLeft=rect.left - cRect.left; startTop=rect.top - cRect.top; itemRef= state.items.find(i=>i.id===el.dataset.id); el.classList.add('dash-moving'); window.addEventListener('mousemove',onMove); window.addEventListener('touchmove',onMove,{passive:false}); window.addEventListener('mouseup',onUp); window.addEventListener('touchend',onUp); }
+      function onMove(e){ if(!itemRef) return; e.preventDefault(); const curX=(e.touches?e.touches[0].clientX:e.clientX); const curY=(e.touches?e.touches[0].clientY:e.clientY); const dx=curX-startX; const dy=curY-startY; itemRef.pxX = Math.max(0, startLeft + dx); itemRef.pxY = Math.max(0, startTop + dy); layoutAll(); }
+      function onUp(){ el.classList.remove('dash-moving'); window.removeEventListener('mousemove',onMove); window.removeEventListener('touchmove',onMove); window.removeEventListener('mouseup',onUp); window.removeEventListener('touchend',onUp); saveLayout(); }
+      handle.addEventListener('mousedown',onDown); handle.addEventListener('touchstart',onDown,{passive:false}); }
+    function enableResize(el){ const grip=el.querySelector('.dash-resize'); if(!grip) return; let startX,startY,startW,startH,itemRef; function onDown(e){ e.preventDefault(); startX=(e.touches?e.touches[0].clientX:e.clientX); startY=(e.touches?e.touches[0].clientY:e.clientY); itemRef= state.items.find(i=>i.id===el.dataset.id); const r=itemRect(itemRef); startW=r.width; startH=r.height; el.classList.add('dash-resizing'); window.addEventListener('mousemove',onMove); window.addEventListener('touchmove',onMove,{passive:false}); window.addEventListener('mouseup',onUp); window.addEventListener('touchend',onUp); }
+  function onMove(e){ if(!itemRef) return; e.preventDefault(); const curX=(e.touches?e.touches[0].clientX:e.clientX); const curY=(e.touches?e.touches[0].clientY:e.clientY); const dx=curX-startX; const dy=curY-startY; let nw=startW+dx; let nh=startH+dy; nw=Math.max(MIN_W,nw); nh=Math.max(MIN_H,nh); itemRef.pxW=nw; itemRef.pxH=nh; layoutAll(); }
+  function onUp(){ el.classList.remove('dash-resizing'); window.removeEventListener('mousemove',onMove); window.removeEventListener('touchmove',onMove); window.removeEventListener('mouseup',onUp); window.removeEventListener('touchend',onUp); saveLayout(); scheduleNumberScale(); }
+      grip.addEventListener('mousedown',onDown); grip.addEventListener('touchstart',onDown,{passive:false}); }
+    function showEmpty(){ canvas.innerHTML='<div class="text-muted small p-3 border rounded bg-light">No dashboard items yet. Click ＋ to add reports.</div>'; }
+    function applyHighlightIfNeeded(){ const p=new URLSearchParams(window.location.search); const id=p.get('new'); if(!id) return; const target=canvas.querySelector('[data-report-id="'+id+'"]'); if(target){ const card=target.closest('.dash-card'); if(card){ card.classList.add('dash-highlight'); setTimeout(()=>card.classList.remove('dash-highlight'),4000); } } }
+    function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+    function packRandomLayout(auto){
+      if(!state.items.length) return;
+      const order = shuffle([...state.items.map(i=>i.id)]);
+      const canvasWidth = canvas.clientWidth || window.innerWidth;
+      const maxRowHeight = 20; // just large sentinel
+      let cursorX = 0, cursorY = 0, lineHeight = 0;
+      const margin = 16;
+      order.forEach(id=>{
+        const it = state.items.find(i=>i.id===id);
+        if(!it) return;
+        const w = Math.max(240, Math.min(it.pxW||400, canvasWidth*0.4));
+        const h = Math.max(160, it.pxH||300);
+        if(cursorX + w > canvasWidth){ // wrap
+          cursorX = 0;
+          cursorY += lineHeight + margin;
+          lineHeight = 0;
+        }
+        it.pxX = cursorX;
+        it.pxY = cursorY;
+        it.pxW = w;
+        it.pxH = h;
+        cursorX += w + margin;
+        lineHeight = Math.max(lineHeight, h);
+      });
+        layoutAll(); resizeCanvasHeight(); if(!auto) saveLayout();
+    }
+  async function init(){ try { state.items = await fetchItems(); if(!state.items.length){ showEmpty(); return; }
+      // initialize pixel defaults for legacy entries
+      state.items.forEach(i=>{ if(typeof i.pxX !== 'number') i.pxX= (i.x||0)*220; if(typeof i.pxY !== 'number') i.pxY=(i.y||0)*180; if(typeof i.pxW !== 'number') i.pxW=(i.w||4)*200; if(typeof i.pxH !== 'number') i.pxH=(i.h||4)*140; });
+  state.items.forEach(renderItem); resizeCanvasHeight(); await renderCharts(); applyHighlightIfNeeded(); wireModal(); constrainWithin(); packRandomLayout(true); applyOverviewPref(); setTimeout(()=>{ liveRefreshAll(); startPolling(); }, 2000); } catch(e){ showEmpty(); log('init fail', e); } }
+  // Wire pack button
+  document.addEventListener('click', function(e){ var t=e.target; if(!t) return; if(t.id==='packLayoutBtn'){ packRandomLayout(); } if(t.id==='toggleOverviewBtn'){ toggleOverview(); } });
+  function toggleOverview(){ const row=document.getElementById('overviewRow'); const btn=document.getElementById('toggleOverviewBtn'); if(!row||!btn) return; const hidden=row.classList.toggle('d-none'); btn.textContent= hidden ? 'Show Overview' : 'Hide Overview'; localStorage.setItem('overviewHidden', hidden? '1':'0'); }
+  function applyOverviewPref(){ const row=document.getElementById('overviewRow'); const btn=document.getElementById('toggleOverviewBtn'); if(!row||!btn) return; const pref=localStorage.getItem('overviewHidden')==='1'; if(pref){ row.classList.add('d-none'); btn.textContent='Show Overview'; } }
+    function wireModal(){ const addBtn=document.getElementById('addReportBtn'); const modalEl=document.getElementById('addReportsModal'); const list=document.getElementById('reportsList'); const addSelectedBtn=document.getElementById('addSelectedReportsBtn'); if(!addBtn) return; let modal; function ensureModal(){ if(!modal) modal=new bootstrap.Modal(modalEl); return modal;} function existingIds(){ return Array.from(canvas.querySelectorAll('[data-report-id]')).map(el=>el.getAttribute('data-report-id')); } addBtn.addEventListener('click', async ()=>{ list.innerHTML='<div class="text-muted small">Loading…</div>'; addSelectedBtn.disabled=true; ensureModal().show(); try { const res= await fetch('/api/v1/reports'); if(!res.ok){ list.innerHTML='<div class="text-danger small">Failed.</div>'; return;} const json= await res.json(); const existing=new Set(existingIds()); const rows=(json.reports||[]).filter(r=>!existing.has(r.id)); if(!rows.length){ list.innerHTML='<div class="text-muted small">All reports already on dashboard.</div>'; return;} list.innerHTML=''; rows.forEach(r=>{ const id='rep_'+r.id; const div=document.createElement('div'); div.className='form-check'; div.innerHTML=`<input class=\"form-check-input repChk\" type=\"checkbox\" id=\"${id}\" value=\"${r.id}\"> <label class=\"form-check-label\" for=\"${id}\">${r.name} <span class=\"text-muted\">(${r.chartType||'line'})</span></label>`; list.appendChild(div); }); list.addEventListener('change',()=>{ addSelectedBtn.disabled=!list.querySelectorAll('.repChk:checked').length; }, { once:true }); } catch { list.innerHTML='<div class="text-danger small">Error.</div>'; } }); addSelectedBtn.addEventListener('click', async ()=>{ const selected=Array.from(list.querySelectorAll('.repChk:checked')).map(i=>i.value); if(!selected.length) return; addSelectedBtn.disabled=true; addSelectedBtn.textContent='Adding…'; for(const id of selected){ try { await fetch('/api/v1/dashboard/items',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ reportId:id }) }); } catch {} } addSelectedBtn.textContent='Done'; setTimeout(()=>window.location='/',400); }); }
+    init();
+  })();
+</script>
+<!-- SweetAlert2 loaded dynamically if missing -->
