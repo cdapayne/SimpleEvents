@@ -1,0 +1,110 @@
+<!-- Test Event Modal -->
+<div class="modal fade" id="testEventModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Send a Test Event</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <p class="small text-muted">Use one of the examples below to send a quick event. Replace values as needed.</p>
+        <ul class="nav nav-tabs mb-3" role="tablist">
+          <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#curlTab" type="button">cURL</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#jsTab" type="button">JavaScript</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#pyTab" type="button">Python</button></li>
+        </ul>
+        <div class="tab-content small">
+          <div class="tab-pane fade show active" id="curlTab">
+            <pre class="bg-light p-2 border small" id="curlSnippet"></pre>
+          </div>
+          <div class="tab-pane fade" id="jsTab">
+            <pre class="bg-light p-2 border small" id="jsSnippet"></pre>
+          </div>
+          <div class="tab-pane fade" id="pyTab">
+            <pre class="bg-light p-2 border small" id="pySnippet"></pre>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-primary" id="sendFromBrowser">Send From Browser</button>
+        <div class="text-muted small mt-2">Each send includes a random sample phrase.</div>
+        <span id="testEventStatus" class="small ms-2"></span>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button></div>
+    </div>
+  </div>
+</div>
+
+<script nonce="<%= cspNonce %>">
+  document.querySelectorAll('.progress-bar[data-percent]')?.forEach(function(el){
+    var p = el.getAttribute('data-percent');
+    if(p) el.style.width = p + '%';
+  });
+  (function(){
+    const apiKey = '<%= (apiKey || "") %>';
+    const curl = `curl -X POST -H "Content-Type: application/json" -H "X-API-Key: ${apiKey}" -d '{"app":"demo","type":"test.event","payload":{"source":"curl"}}' <%= (process.env.APP_BASE_URL||'http://localhost:3000') %>/api/v1/events/ingest`;
+    const js = `fetch('<%= (process.env.APP_BASE_URL||'http://localhost:3000') %>/api/v1/events/ingest',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':'${apiKey}'},body:JSON.stringify({app:'demo',type:'test.event',payload:{source:'js'}})}).then(r=>r.json()).then(console.log);`;
+    const py = `import requests, json\nprint(requests.post('<%= (process.env.APP_BASE_URL||'http://localhost:3000') %>/api/v1/events/ingest',headers={'X-API-Key':'${apiKey}'},json={'app':'demo','type':'test.event','payload':{'source':'python'}}).json())`;
+    var curlPre = document.getElementById('curlSnippet');
+    var jsPre = document.getElementById('jsSnippet');
+    var pyPre = document.getElementById('pySnippet');
+    if(curlPre) curlPre.textContent = curl;
+    if(jsPre) jsPre.textContent = js;
+    if(pyPre) pyPre.textContent = py;
+    var btn = document.getElementById('sendFromBrowser');
+    if(!btn) return;
+    async function ensureSwal(){
+      if (window.Swal) return true;
+      return new Promise(resolve => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+        s.onload = () => resolve(true);
+        s.onerror = () => resolve(false);
+        document.head.appendChild(s);
+      });
+    }
+    const phrases = [
+      'alpha launch',
+      'beta signup',
+      'user activated',
+      'plan upgraded',
+      'quota nearing',
+      'feature clicked',
+      'dashboard view',
+      'event processed'
+    ];
+    function randomPhrase(){ return phrases[Math.floor(Math.random()*phrases.length)]; }
+    btn.addEventListener('click', async ()=>{
+      const payload = {app:'demo',type:'test.event',payload:{origin:'browser', text: randomPhrase()}};
+      let res, out;
+      try {
+        res = await fetch('/api/v1/events/ingest',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':apiKey},body:JSON.stringify(payload)});
+        out = await res.json();
+        const success = res.ok;
+        const statusEl = document.getElementById('testEventStatus');
+        if(statusEl) statusEl.textContent = success ? 'Sent ✔' : ('Error: '+(out.error||res.status));
+        await ensureSwal();
+        if (window.Swal) {
+          if (success) {
+            Swal.fire({
+              title: 'Test event sent',
+              icon: 'success',
+              html: '<p class="small text-start mb-2">Payload:</p><pre class="text-start bg-light p-2 border rounded small mb-0">'+
+                document.createTextNode(JSON.stringify(payload,null,2)).textContent + '</pre>',
+              confirmButtonText: 'Close'
+            });
+          } else {
+            Swal.fire({
+              title: 'Send failed',
+              icon: 'error',
+              text: (out && out.error) ? out.error : ('Status '+res.status),
+              confirmButtonText: 'Close'
+            });
+          }
+        }
+      } catch(err){
+        const statusEl = document.getElementById('testEventStatus');
+        if(statusEl) statusEl.textContent = 'Error';
+        await ensureSwal();
+        if (window.Swal) {
+          Swal.fire({ title: 'Network error', icon: 'error', text: String(err), confirmButtonText: 'Close' });
+        }
+      }
+    });
+  })();
+</script>

@@ -1,0 +1,60 @@
+<%- include('partials/_head') %>
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Branding</h1>
+    <a href="/" class="btn btn-outline-secondary btn-sm">← Back</a>
+  </div>
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <form method="POST" action="/branding" enctype="multipart/form-data" class="vstack gap-3">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div>
+              <label class="form-label fw-semibold">Logo Image</label>
+              <input class="form-control" type="file" name="logo" accept="image/*" />
+              <div class="form-text">Max 2MB. Prefer square PNG/SVG with transparent background.</div>
+            </div>
+            <div>
+              <label class="form-label fw-semibold mb-1">Title</label>
+              <input class="form-control" type="text" name="title" maxlength="120" value="<%= branding?.brandingTitle || '' %>" placeholder="e.g. Acme Analytics" />
+            </div>
+            <div>
+              <label class="form-label fw-semibold mb-1">Subtitle</label>
+              <input class="form-control" type="text" name="subtitle" maxlength="180" value="<%= branding?.brandingSubtitle || '' %>" placeholder="e.g. Real‑time product event insights" />
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="on" id="addToDashboard" name="addToDashboard" <%= branding ? 'checked disabled' : 'checked' %> />
+              <label class="form-check-label" for="addToDashboard">Add / Update branding card on dashboard</label>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-primary" type="submit">Save Branding</button>
+              <% if (branding) { %>
+              <a href="/" class="btn btn-outline-secondary">View Dashboard</a>
+              <% } %>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="card shadow-sm h-100">
+        <div class="card-body d-flex flex-column justify-content-center align-items-center text-center gap-3">
+          <h6 class="text-muted mb-0">Preview</h6>
+          <div class="branding-preview border rounded p-4 w-100 d-flex flex-column align-items-center gap-3" style="min-height:260px;">
+            <% if (branding?.brandingLogo) { %>
+              <img src="<%= branding.brandingLogo %>" alt="Logo" class="img-fluid" style="max-height:120px;object-fit:contain;" />
+            <% } else { %>
+              <div class="placeholder bg-light d-flex align-items-center justify-content-center rounded" style="height:120px;width:120px;font-size:12px;color:#888;">No Logo</div>
+            <% } %>
+            <div class="text-wrap" style="max-width:100%">
+              <div class="fw-semibold fs-5"><%= branding?.brandingTitle || 'Title' %></div>
+              <div class="text-muted small"><%= branding?.brandingSubtitle || 'Subtitle' %></div>
+            </div>
+          </div>
+          <p class="small text-muted mb-0">Dashboard card uses same resizing + drag behavior.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -17,12 +17,27 @@ import { getPlanDefinition, getOrCreateCurrentUsage, incrementUsage, usagePercen
 import { z } from 'zod';
 import { parse } from 'url';
 import { aggregateEvents, toChartResponse, ReportConfig } from './lib/reporting';
-import multer, { FileFilterCallback } from 'multer';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import multer from 'multer';
 import fs from 'fs';
 
 dotenv.config();
 
 const app = express();
+
+// File uploads (branding logos)
+const uploadDir = path.join(__dirname,'..','public','uploads');
+if(!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+const storage = multer.diskStorage({
+  // using any types to keep lightweight (no custom ambient declarations required)
+  destination: (_req: Request, _file: any, cb: (error: Error | null, destination: string) => void) => cb(null, uploadDir),
+  filename: (_req: Request, file: any, cb: (error: Error | null, filename: string) => void) => {
+    const ext = path.extname(file.originalname) || '.png';
+    cb(null, 'logo_'+Date.now()+ext);
+  }
+});
+const upload = multer({ storage, limits: { fileSize: 2 * 1024 * 1024 } }); // 2MB
 
 // Basic configuration
 const APP_NAME = process.env.APP_NAME || 'Evently Analytics';
@@ -35,10 +50,6 @@ app.set('layout', 'layout');
 
 // Static assets
 app.use('/public', express.static(path.join(__dirname, '..', 'public')));
-// Uploaded assets (logos)
-const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
-if(!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-app.use('/uploads', express.static(uploadsDir));
 
 // Trust proxy (if behind reverse proxy in future)
 app.set('trust proxy', 1);
@@ -103,55 +114,71 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Routes
-declare global { namespace Express { interface Request { file?: Express.Multer.File; files?: Express.Multer.File[]; } } }
-const storage = multer.diskStorage({ destination: uploadsDir, filename: (_req:Request, file:Express.Multer.File, cb: (error:Error|null, filename:string)=>void)=>{ const unique = Date.now()+'-'+Math.round(Math.random()*1e6); const ext = path.extname(file.originalname)||'.png'; cb(null, 'logo-'+unique+ext); } });
-const upload = multer({ storage, limits:{ fileSize: 2 * 1024 * 1024 }, fileFilter: (_req:Request, file:Express.Multer.File, cb:FileFilterCallback)=>{ const ok = /\.(png|jpg|jpeg|gif|svg)$/i.test(file.originalname); cb(ok? null : new Error('invalid_file_type')); } });
-
-app.get('/branding', requireAuth, async (req: Request, res: Response) => {
-  const { dashboardItemRepo } = getRepos();
-  const accountId = (req.session as any).user.accountId;
-  const items = (await dashboardItemRepo.all()).filter(i=> (i as any).accountId===accountId && (i as any).type==='branding');
-  const branding = items[0] || null;
-  res.render('branding', { title: 'Branding', branding });
-});
-
-app.post('/branding', requireAuth, upload.single('logo'), async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { dashboardItemRepo } = getRepos();
-    const accountId = (req.session as any).user.accountId;
-    const { title, subtitle, addToDashboard } = req.body || {};
-  const filePath = (req.file && ('/uploads/'+path.basename(req.file.path))) || undefined;
-    // Find existing branding item
-    const all = await dashboardItemRepo.all();
-  let branding:any = all.find(i=> (i as any).accountId===accountId && (i as any).type==='branding');
-    if(branding){
-      const patch:any = { meta: { ...((branding as any).meta||{}), title: title||'', subtitle: subtitle||'', logo: filePath || ((branding as any).meta?.logo) } };
-      await dashboardItemRepo.update(branding.id, patch);
-    } else {
-      const meta = { title: title||'', subtitle: subtitle||'', logo: filePath||'' };
-      branding = await dashboardItemRepo.create({ accountId, type:'branding', meta, x:0,y:0,w:4,h:4, createdAt:new Date().toISOString() } as any);
-    }
-    if(addToDashboard && !(branding as any).pxX){ /* pixel defaults handled on dashboard */ }
-    res.redirect('/branding');
-  } catch(e){ next(e); }
-});
 app.get('/', requireAuth, async (req: Request, res: Response) => {
-  const { eventRepo, accountRepo, userRepo, accountRepo: aRepo, apiKeyRepo } = getRepos();
+  const { apiKeyRepo } = getRepos();
+  const accountId = (req.session as any).user.accountId;
+  const apiKeyRecord = (await apiKeyRepo.all()).find(k => k.accountId === accountId && !k.disabledAt);
+  const apiKey = apiKeyRecord?.key || '';
+  res.render('index', { title: 'Dashboard', apiKey });
+});
+
+// Overview page (extracted from dashboard index)
+app.get('/overview', requireAuth, async (req: Request, res: Response) => {
+  const { eventRepo, accountRepo, userRepo, apiKeyRepo } = getRepos();
   const [eventsCount, accountsCount, usersCount] = await Promise.all([
     eventRepo.count(),
     accountRepo.count(),
     userRepo.count()
   ]);
-  const session = (req.session as any).user;
-  const account = (await aRepo.all()).find(a => a.id === session.accountId)!;
+  const accountId = (req.session as any).user.accountId;
+  const account = (await accountRepo.all()).find(a => a.id === accountId)!;
   const planDef = getPlanDefinition(account.plan);
   const usage = await getOrCreateCurrentUsage(account);
   const limit = planDef.monthlyEventLimit;
   const percent = usagePercent(limit, usage.events);
   const nearLimit = isFinite(limit) && percent >= 90;
-  const apiKeyRecord = (await apiKeyRepo.all()).find(k => k.accountId === account.id && !k.disabledAt);
+  const apiKeyRecord = (await apiKeyRepo.all()).find(k => k.accountId === accountId && !k.disabledAt);
   const apiKey = apiKeyRecord?.key || '';
-  res.render('index', { title: 'Dashboard', eventsCount, accountsCount, usersCount, plan: planDef, usage, limit, percent, nearLimit, apiKey });
+  res.render('overview', { title: 'Overview', eventsCount, accountsCount, usersCount, plan: planDef, usage, limit, percent, nearLimit, apiKey });
+});
+
+// Branding configuration screen
+app.get('/branding', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { dashboardItemRepo } = getRepos();
+    const accountId = (req.session as any).user.accountId;
+    const all = (await dashboardItemRepo.all()).filter(i=> i.accountId===accountId && (i as any).type==='branding');
+    const existing = all[0];
+    res.render('branding', { title: 'Branding', branding: existing });
+  } catch(e){ next(e); }
+});
+
+app.post('/branding', requireAuth, upload.single('logo'), async (req: Request & { file?: any }, res: Response, next: NextFunction) => {
+  try {
+    const { dashboardItemRepo } = getRepos();
+    const accountId = (req.session as any).user.accountId;
+    const title = (req.body?.title||'').toString().slice(0,120);
+    const subtitle = (req.body?.subtitle||'').toString().slice(0,180);
+    const addToDashboard = req.body?.addToDashboard === 'on';
+    let logoPath: string | undefined;
+    if(req.file){
+      logoPath = '/public/uploads/' + path.basename(req.file.path);
+    }
+    // Try find existing
+    const all = await dashboardItemRepo.all();
+    let existing = all.find(i=> i.accountId===accountId && (i as any).type==='branding');
+    if(existing){
+      const patch: any = {};
+      patch.type = 'branding';
+      patch.brandingTitle = title;
+      patch.brandingSubtitle = subtitle;
+      if(logoPath) patch.brandingLogo = logoPath;
+      await dashboardItemRepo.update(existing.id, patch);
+    } else if(addToDashboard) {
+      existing = await dashboardItemRepo.create({ accountId, x:0, y:0, w:4, h:4, createdAt: new Date().toISOString(), type:'branding', brandingTitle: title, brandingSubtitle: subtitle, brandingLogo: logoPath } as any);
+    }
+    res.redirect('/');
+  } catch(e){ next(e); }
 });
 
 // Auth pages

@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" role="navigation" aria-label="Primary">
   <div class="container-fluid">
   <a class="navbar-brand" href="/">Evently</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -7,12 +7,14 @@
     <div class="collapse navbar-collapse" id="mainNav">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
   <% if (typeof sessionUser !== 'undefined' && sessionUser) { %>
-          <li class="nav-item"><a class="nav-link <%= (title==='Dashboard') ? 'active' : '' %>" href="/">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link <%= (title==='Events') ? 'active' : '' %>" href="/events">Events</a></li>
-          <li class="nav-item"><a class="nav-link <%= (title==='Reports') ? 'active' : '' %>" href="/reports">Reports</a></li>
-          <li class="nav-item"><a class="nav-link <%= (title==='API Keys') ? 'active' : '' %>" href="/apikeys">API Keys</a></li>
-          <li class="nav-item"><a class="nav-link <%= (title==='Billing') ? 'active' : '' %>" href="/billing">Billing</a></li>
-          <li class="nav-item"><a class="nav-link <%= (title==='API Docs') ? 'active' : '' %>" href="/docs">Docs</a></li>
+          <li class="nav-item"><a class="nav-link <%= (title==='Dashboard') ? 'active' : '' %>" href="/" <%= (title==='Dashboard') ? 'aria-current="page"' : '' %>>Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link <%= (title==='Overview') ? 'active' : '' %>" href="/overview" <%= (title==='Overview') ? 'aria-current="page"' : '' %>>Overview</a></li>
+          <li class="nav-item"><a class="nav-link <%= (title==='Events') ? 'active' : '' %>" href="/events" <%= (title==='Events') ? 'aria-current="page"' : '' %>>Events</a></li>
+          <li class="nav-item"><a class="nav-link <%= (title==='Reports') ? 'active' : '' %>" href="/reports" <%= (title==='Reports') ? 'aria-current="page"' : '' %>>Reports</a></li>
+          <li class="nav-item"><a class="nav-link <%= (title==='Branding') ? 'active' : '' %>" href="/branding" <%= (title==='Branding') ? 'aria-current="page"' : '' %>>Branding</a></li>
+          <li class="nav-item"><a class="nav-link <%= (title==='API Keys') ? 'active' : '' %>" href="/apikeys" <%= (title==='API Keys') ? 'aria-current="page"' : '' %>>API Keys</a></li>
+          <li class="nav-item"><a class="nav-link <%= (title==='Billing') ? 'active' : '' %>" href="/billing" <%= (title==='Billing') ? 'aria-current="page"' : '' %>>Billing</a></li>
+          <li class="nav-item"><a class="nav-link <%= (title==='API Docs') ? 'active' : '' %>" href="/docs" <%= (title==='API Docs') ? 'aria-current="page"' : '' %>>Docs</a></li>
         <% } else { %>
           <li class="nav-item"><a class="nav-link <%= (title==='API Docs') ? 'active' : '' %>" href="/docs">Docs</a></li>
         <% } %>

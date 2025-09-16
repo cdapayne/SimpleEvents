@@ -1,73 +1,10 @@
 <div class="pb-3 border-bottom mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
   <div class="d-flex align-items-center gap-3">
-    <h1 class="h3 mb-0">Dashboard</h1>
-    <button class="btn btn-outline-secondary btn-sm" id="toggleOverviewBtn" type="button" title="Hide overview section">Hide Overview</button>
+    <h1 class="h3 mb-0" id="dashboardHeading">Dashboard</h1>
   </div>
   <form method="POST" action="/demo" class="d-none"> <!-- placeholder for a CSRF protected form -->
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   </form>
-</div>
-<div id="overviewRow" class="row g-4">
-  <div class="col-md-6 col-lg-4">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <h5 class="card-title d-flex justify-content-between align-items-center">Getting Started <span class="badge bg-primary">New</span></h5>
-        <ol class="small ps-3 mb-3" id="onboardSteps">
-          <li data-step="key">Create an API Key <a href="/apikeys" class="ms-1">Open</a></li>
-          <li data-step="event">Send a Test Event <button class="btn btn-link btn-sm p-0" data-bs-toggle="modal" data-bs-target="#testEventModal">Send</button></li>
-          <li data-step="view">View Events <a href="/events" class="ms-1">Go</a></li>
-          <li data-step="report">Build a Report <a href="/reports/new" class="ms-1">Build</a></li>
-        </ol>
-        <div class="alert alert-info small mb-0" id="onboardHint">Complete the steps above to finish setup.</div>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <h5 class="card-title">Events Tracked</h5>
-        <p class="display-6 fw-semibold text-primary"><%= eventsCount %></p>
-        <p class="text-muted small mb-0">Across <%= accountsCount %> account(s).</p>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <h5 class="card-title">Plan Usage</h5>
-        <p class="mb-1 small text-muted"><%= plan.name %></p>
-        <% if (isFinite(limit)) { %>
-        <div class="progress mb-2" style="height: 16px;">
-          <div class="progress-bar <%= nearLimit ? 'bg-danger' : 'bg-success' %>" role="progressbar" data-percent="<%= percent %>" aria-valuenow="<%= percent %>" aria-valuemin="0" aria-valuemax="100"></div>
-        </div>
-        <p class="small mb-0"><%= usage.events %> / <%= limit.toLocaleString() %> events (<%= percent %>%)</p>
-        <% } else { %>
-        <p class="h5 mb-0">Unlimited</p>
-        <% } %>
-        <% if (nearLimit) { %>
-        <div class="alert alert-warning mt-3 p-2 small mb-0">You're at <%= percent %>% of your event quota.</div>
-        <% } %>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <h5 class="card-title">Users</h5>
-        <p class="display-6 fw-semibold text-primary"><%= usersCount %></p>
-        <p class="text-muted small mb-0">Seed demo owner included.</p>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <h5 class="card-title">Last Ingest</h5>
-        <p class="display-6 fw-semibold text-primary">Recent</p>
-        <p class="text-muted small mb-0">Events generated on seed.</p>
-      </div>
-    </div>
-  </div>
 </div>
 
 <div class="mt-5 dash-full-width-wrapper">
@@ -108,109 +45,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
 
-<!-- Test Event Modal -->
-<div class="modal fade" id="testEventModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header"><h5 class="modal-title">Send a Test Event</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-      <div class="modal-body">
-        <p class="small text-muted">Use one of the examples below to send a quick event. Replace values as needed.</p>
-        <ul class="nav nav-tabs mb-3" role="tablist">
-          <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#curlTab" type="button">cURL</button></li>
-          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#jsTab" type="button">JavaScript</button></li>
-          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#pyTab" type="button">Python</button></li>
-        </ul>
-        <div class="tab-content small">
-          <div class="tab-pane fade show active" id="curlTab">
-            <pre class="bg-light p-2 border small" id="curlSnippet"></pre>
-          </div>
-          <div class="tab-pane fade" id="jsTab">
-            <pre class="bg-light p-2 border small" id="jsSnippet"></pre>
-          </div>
-            <div class="tab-pane fade" id="pyTab">
-            <pre class="bg-light p-2 border small" id="pySnippet"></pre>
-          </div>
-        </div>
-  <button class="btn btn-sm btn-primary" id="sendFromBrowser">Send From Browser</button>
-  <div class="text-muted small mt-2">Each send includes a random sample phrase.</div>
-        <span id="testEventStatus" class="small ms-2"></span>
-      </div>
-      <div class="modal-footer"><button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button></div>
-    </div>
-  </div>
-</div>
+<%- include('partials/_test_event_modal') %>
 
 <script nonce="<%= cspNonce %>">
-  document.querySelectorAll('.progress-bar[data-percent]')?.forEach(function(el){
-    var p = el.getAttribute('data-percent');
-    if(p) el.style.width = p + '%';
-  });
-  (function(){
-  const apiKey = '<%= (apiKey || "") %>';
-    const curl = `curl -X POST -H "Content-Type: application/json" -H "X-API-Key: ${apiKey}" -d '{"app":"demo","type":"test.event","payload":{"source":"curl"}}' <%= (process.env.APP_BASE_URL||'http://localhost:3000') %>/api/v1/events/ingest`;
-    const js = `fetch('<%= (process.env.APP_BASE_URL||'http://localhost:3000') %>/api/v1/events/ingest',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':'${apiKey}'},body:JSON.stringify({app:'demo',type:'test.event',payload:{source:'js'}})}).then(r=>r.json()).then(console.log);`;
-    const py = `import requests, json\nprint(requests.post('<%= (process.env.APP_BASE_URL||'http://localhost:3000') %>/api/v1/events/ingest',headers={'X-API-Key':'${apiKey}'},json={'app':'demo','type':'test.event','payload':{'source':'python'}}).json())`;
-    document.getElementById('curlSnippet').textContent = curl;
-    document.getElementById('jsSnippet').textContent = js;
-    document.getElementById('pySnippet').textContent = py;
-    const btn = document.getElementById('sendFromBrowser');
-    async function ensureSwal(){
-      if (window.Swal) return true;
-      return new Promise(resolve => {
-        const s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
-        s.onload = () => resolve(true);
-        s.onerror = () => resolve(false);
-        document.head.appendChild(s);
-      });
-    }
-    const phrases = [
-      'alpha launch',
-      'beta signup',
-      'user activated',
-      'plan upgraded',
-      'quota nearing',
-      'feature clicked',
-      'dashboard view',
-      'event processed'
-    ];
-    function randomPhrase(){ return phrases[Math.floor(Math.random()*phrases.length)]; }
-    btn.addEventListener('click', async ()=>{
-      const payload = {app:'demo',type:'test.event',payload:{origin:'browser', text: randomPhrase()}};
-      let res, out;
-      try {
-        res = await fetch('/api/v1/events/ingest',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':apiKey},body:JSON.stringify(payload)});
-        out = await res.json();
-        const success = res.ok;
-        document.getElementById('testEventStatus').textContent = success ? 'Sent ✔' : ('Error: '+(out.error||res.status));
-        await ensureSwal();
-        if (window.Swal) {
-          if (success) {
-            Swal.fire({
-              title: 'Test event sent',
-              icon: 'success',
-              html: '<p class="small text-start mb-2">Payload:</p><pre class="text-start bg-light p-2 border rounded small mb-0">'+
-                document.createTextNode(JSON.stringify(payload,null,2)).textContent + '</pre>',
-              confirmButtonText: 'Close'
-            });
-          } else {
-            Swal.fire({
-              title: 'Send failed',
-              icon: 'error',
-              text: (out && out.error) ? out.error : ('Status '+res.status),
-              confirmButtonText: 'Close'
-            });
-          }
-        }
-      } catch(err){
-        document.getElementById('testEventStatus').textContent = 'Error';
-        await ensureSwal();
-        if (window.Swal) {
-          Swal.fire({ title: 'Network error', icon: 'error', text: String(err), confirmButtonText: 'Close' });
-        }
-      }
-    });
-  })();
   // Dashboard canvas logic (custom drag/resize)
   (function(){
     const canvas = document.getElementById('dashList');
@@ -221,39 +58,85 @@
   let numberScaleTimer;
   function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
   function isDark(){ return document.documentElement.getAttribute('data-theme')==='dark' || window.matchMedia('(prefers-color-scheme: dark)').matches; }
-  function rethemeCharts(){ const dark=isDark(); const textColor = dark ? '#fff' : (cssVar('--text-color')||'#1a1f29'); const gridColor = dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'; Object.values(liveState.chartObjs).forEach(ch=>{ if(!ch) return; if(ch.options?.plugins?.legend?.labels) ch.options.plugins.legend.labels.color=textColor; const scales=ch.options.scales; if(scales){ if(scales.x){ if(scales.x.ticks) scales.x.ticks.color=textColor; if(scales.x.grid) scales.x.grid.color=gridColor; } if(scales.y){ if(scales.y.ticks) scales.y.ticks.color=textColor; if(scales.y.grid) scales.y.grid.color=gridColor; } } ch.update(); }); }
+  function rethemeCharts(){
+    const dark=isDark();
+    const textColor = dark ? '#ffffff' : (cssVar('--text-color')||'#1a1f29');
+    const gridColor = dark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.1)';
+    const axisColor = dark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)';
+    Object.values(liveState.chartObjs).forEach(ch=>{
+      if(!ch) return;
+      // Legend
+      if(ch.options?.plugins?.legend?.labels) ch.options.plugins.legend.labels.color = textColor;
+      // Datasets and element colors
+      if(ch.data && Array.isArray(ch.data.datasets)){
+        ch.data.datasets.forEach(ds => {
+          // brighten border color in dark mode
+          if(dark){
+            ds.borderColor = ds.borderColor || 'rgba(255,255,255,0.9)';
+            ds.backgroundColor = ds.backgroundColor || 'rgba(255,255,255,0.06)';
+            ds.pointBackgroundColor = ds.pointBackgroundColor || 'rgba(255,255,255,0.95)';
+          } else {
+            // restore to defaults based on tokens
+            ds.borderColor = ds.borderColor || ds.borderColor;
+          }
+        });
+      }
+      const scales=ch.options.scales;
+      if(scales){
+        if(scales.x){ if(scales.x.ticks) scales.x.ticks.color = axisColor; if(scales.x.grid) scales.x.grid.color = gridColor; }
+        if(scales.y){ if(scales.y.ticks) scales.y.ticks.color = axisColor; if(scales.y.grid) scales.y.grid.color = gridColor; }
+      }
+      // Force high contrast for tooltips and titles
+      if(ch.options.plugins && ch.options.plugins.tooltip) ch.options.plugins.tooltip.titleColor = textColor;
+      if(ch.options.plugins && ch.options.plugins.title) ch.options.plugins.title.color = textColor;
+      ch.update();
+    });
+  }
   // Observe theme attribute changes
   new MutationObserver(m=>{ if(m.some(x=>x.attributeName==='data-theme')) rethemeCharts(); }).observe(document.documentElement,{ attributes:true });
   // Listen to system preference changes
   try { const mql = window.matchMedia('(prefers-color-scheme: dark)'); if(mql.addEventListener) mql.addEventListener('change', rethemeCharts); else if(mql.addListener) mql.addListener(rethemeCharts); } catch {}
     function log(...a){ console.log('[dash]', ...a); }
-    async function fetchItems(){ const r= await fetch('/api/v1/dashboard/items'); if(!r.ok) throw new Error('fetch_fail'); const j= await r.json(); return (j.items||[]).filter(i=>i.report); }
+  async function fetchItems(){ const r= await fetch('/api/v1/dashboard/items'); if(!r.ok) throw new Error('fetch_fail'); const j= await r.json(); return (j.items||[]).filter(i=> i.report || i.type==='branding'); }
     function px(v){ return Math.round(v); }
   function itemRect(it){ return { left: it.pxX ?? 0, top: it.pxY ?? 0, width: it.pxW ?? (it.w? it.w*200 : 400), height: it.pxH ?? (it.h? it.h*140 : 300) }; }
     function renderItem(it){
       const wrap = document.createElement('div'); wrap.className='dash-card'; wrap.dataset.id=it.id;
   const r = itemRect(it); wrap.style.left=px(r.left)+'px'; wrap.style.top=px(r.top)+'px'; wrap.style.width=px(r.width)+'px'; wrap.style.height=px(r.height)+'px';
-      wrap.innerHTML = `<div class=\"card shadow-sm h-100\">\
-        <div class=\"card-body p-2 d-flex flex-column h-100\">\
-          <div class=\"d-flex justify-content-between align-items-start mb-2 gap-2 position-relative\">\
-            <div class=\"d-flex flex-column flex-grow-1 pe-4\">\
-              <div class=\"d-flex align-items-center gap-2\">\
-                <h6 class=\"mb-0 small\">${it.report.name}</h6>\
-                <span class=\"badge bg-danger-subtle text-danger border border-danger-subtle live-badge d-none\" style=\"font-size:0.6rem;letter-spacing:.5px;\">LIVE</span>\
-                <button class=\"btn btn-light btn-sm p-0 px-1 border refresh-btn\" type=\"button\" title=\"Refresh now\" style=\"font-size:.65rem;\">↻</button>\
-              </div>\
-              <span class=\"text-muted small mt-1 last-updated d-none\"></span>\
-            </div>\
+      if(it.type==='branding'){
+        const title = it.brandingTitle || 'Brand Title';
+        const sub = it.brandingSubtitle || '';
+        const logo = it.brandingLogo ? `<img src="${it.brandingLogo}" alt="Logo" class="img-fluid mb-2 branding-logo" style="max-height:70%; max-width:90%; object-fit:contain;">` : '<div class="text-muted small">No Logo</div>';
+        wrap.innerHTML = `<div class=\"card shadow-sm h-100 branding-card\">\
+          <div class=\"card-body p-2 d-flex flex-column h-100 align-items-center justify-content-center text-center position-relative\">\
             <div class=\"drag-handle position-absolute top-0 end-0 me-1 mt-1 text-muted\" title=\"Drag\" style=\"cursor:grab;user-select:none;\">☰</div>\
+            <div class=\"w-100 h-100 d-flex flex-column align-items-center justify-content-center overflow-hidden\">${logo}<div class=\"fw-semibold\" style=\"font-size:1.1rem;\">${title}</div><div class=\"text-muted small\">${sub}</div></div>\
+            <div class=\"dash-resize\">⋰</div>\
           </div>\
-          <div class=\"flex-grow-1 d-flex align-items-center justify-content-center overflow-hidden\" data-report-id=\"${it.report.id}\"><span class=\"text-muted small\">Loading…</span></div>\
-          <div class=\"dash-resize\">⋰</div>\
-          <div class=\"dash-meta d-none\"></div>\
-        </div>\
-      </div>`;
+        </div>`;
+      } else {
+        wrap.innerHTML = `<div class=\"card shadow-sm h-100\">\
+          <div class=\"card-body p-2 d-flex flex-column h-100\">\
+            <div class=\"d-flex justify-content-between align-items-start mb-2 gap-2 position-relative\">\
+              <div class=\"d-flex flex-column flex-grow-1 pe-4\">\
+                <div class=\"d-flex align-items-center gap-2\">\
+                  <h6 class=\"mb-0 small\">${it.report.name}</h6>\
+                  <span class=\"badge bg-danger-subtle text-danger border border-danger-subtle live-badge d-none\" style=\"font-size:0.6rem;letter-spacing:.5px;\">LIVE</span>\
+                  <button class=\"btn btn-light btn-sm p-0 px-1 border refresh-btn\" type=\"button\" title=\"Refresh now\" style=\"font-size:.65rem;\">↻</button>\
+                </div>\
+                <span class=\"text-muted small mt-1 last-updated d-none\"></span>\
+              </div>\
+              <div class=\"drag-handle position-absolute top-0 end-0 me-1 mt-1 text-muted\" title=\"Drag\" style=\"cursor:grab;user-select:none;\">☰</div>\
+            </div>\
+            <div class=\"flex-grow-1 d-flex align-items-center justify-content-center overflow-hidden\" data-report-id=\"${it.report.id}\"><span class=\"text-muted small\">Loading…</span></div>\
+            <div class=\"dash-resize\">⋰</div>\
+            <div class=\"dash-meta d-none\"></div>\
+          </div>\
+        </div>`;
+      }
       canvas.appendChild(wrap);
       const holder = wrap.querySelector('[data-report-id]');
-      wrap.querySelector('.refresh-btn')?.addEventListener('click', ()=> refreshOne(holder, true));
+      if(holder){ wrap.querySelector('.refresh-btn')?.addEventListener('click', ()=> refreshOne(holder, true)); }
       enableDrag(wrap); enableResize(wrap);
     }
   function layoutAll(){ state.items.forEach(it=>{ const el=canvas.querySelector(`[data-id="${it.id}"]`); if(!el) return; const r=itemRect(it); el.style.left=px(r.left)+'px'; el.style.top=px(r.top)+'px'; el.style.width=px(r.width)+'px'; el.style.height=px(r.height)+'px'; }); resizeCanvasHeight(); scheduleNumberScale(); }
@@ -412,11 +295,9 @@
   async function init(){ try { state.items = await fetchItems(); if(!state.items.length){ showEmpty(); return; }
       // initialize pixel defaults for legacy entries
       state.items.forEach(i=>{ if(typeof i.pxX !== 'number') i.pxX= (i.x||0)*220; if(typeof i.pxY !== 'number') i.pxY=(i.y||0)*180; if(typeof i.pxW !== 'number') i.pxW=(i.w||4)*200; if(typeof i.pxH !== 'number') i.pxH=(i.h||4)*140; });
-  state.items.forEach(renderItem); resizeCanvasHeight(); await renderCharts(); applyHighlightIfNeeded(); wireModal(); constrainWithin(); packRandomLayout(true); applyOverviewPref(); setTimeout(()=>{ liveRefreshAll(); startPolling(); }, 2000); } catch(e){ showEmpty(); log('init fail', e); } }
+  state.items.forEach(renderItem); resizeCanvasHeight(); await renderCharts(); applyHighlightIfNeeded(); wireModal(); constrainWithin(); packRandomLayout(true); setTimeout(()=>{ liveRefreshAll(); startPolling(); }, 2000); } catch(e){ showEmpty(); log('init fail', e); } }
   // Wire pack button
-  document.addEventListener('click', function(e){ var t=e.target; if(!t) return; if(t.id==='packLayoutBtn'){ packRandomLayout(); } if(t.id==='toggleOverviewBtn'){ toggleOverview(); } });
-  function toggleOverview(){ const row=document.getElementById('overviewRow'); const btn=document.getElementById('toggleOverviewBtn'); if(!row||!btn) return; const hidden=row.classList.toggle('d-none'); btn.textContent= hidden ? 'Show Overview' : 'Hide Overview'; localStorage.setItem('overviewHidden', hidden? '1':'0'); }
-  function applyOverviewPref(){ const row=document.getElementById('overviewRow'); const btn=document.getElementById('toggleOverviewBtn'); if(!row||!btn) return; const pref=localStorage.getItem('overviewHidden')==='1'; if(pref){ row.classList.add('d-none'); btn.textContent='Show Overview'; } }
+  document.addEventListener('click', function(e){ var t=e.target; if(!t) return; if(t.id==='packLayoutBtn'){ packRandomLayout(); } });
     function wireModal(){ const addBtn=document.getElementById('addReportBtn'); const modalEl=document.getElementById('addReportsModal'); const list=document.getElementById('reportsList'); const addSelectedBtn=document.getElementById('addSelectedReportsBtn'); if(!addBtn) return; let modal; function ensureModal(){ if(!modal) modal=new bootstrap.Modal(modalEl); return modal;} function existingIds(){ return Array.from(canvas.querySelectorAll('[data-report-id]')).map(el=>el.getAttribute('data-report-id')); } addBtn.addEventListener('click', async ()=>{ list.innerHTML='<div class="text-muted small">Loading…</div>'; addSelectedBtn.disabled=true; ensureModal().show(); try { const res= await fetch('/api/v1/reports'); if(!res.ok){ list.innerHTML='<div class="text-danger small">Failed.</div>'; return;} const json= await res.json(); const existing=new Set(existingIds()); const rows=(json.reports||[]).filter(r=>!existing.has(r.id)); if(!rows.length){ list.innerHTML='<div class="text-muted small">All reports already on dashboard.</div>'; return;} list.innerHTML=''; rows.forEach(r=>{ const id='rep_'+r.id; const div=document.createElement('div'); div.className='form-check'; div.innerHTML=`<input class=\"form-check-input repChk\" type=\"checkbox\" id=\"${id}\" value=\"${r.id}\"> <label class=\"form-check-label\" for=\"${id}\">${r.name} <span class=\"text-muted\">(${r.chartType||'line'})</span></label>`; list.appendChild(div); }); list.addEventListener('change',()=>{ addSelectedBtn.disabled=!list.querySelectorAll('.repChk:checked').length; }, { once:true }); } catch { list.innerHTML='<div class="text-danger small">Error.</div>'; } }); addSelectedBtn.addEventListener('click', async ()=>{ const selected=Array.from(list.querySelectorAll('.repChk:checked')).map(i=>i.value); if(!selected.length) return; addSelectedBtn.disabled=true; addSelectedBtn.textContent='Adding…'; for(const id of selected){ try { await fetch('/api/v1/dashboard/items',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ reportId:id }) }); } catch {} } addSelectedBtn.textContent='Done'; setTimeout(()=>window.location='/',400); }); }
     init();
   })();

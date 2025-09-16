@@ -3,9 +3,10 @@
   <head>
     <%- include('partials/_head'); %>
   </head>
-  <body class="d-flex flex-column min-vh-100">
+  <body class="d-flex flex-column min-vh-100 light-bubbles">
+    <a href="#mainContent" class="visually-hidden-focusable position-absolute top-0 start-0 m-2 btn btn-sm btn-primary">Skip to content</a>
     <%- include('partials/_navbar'); %>
-    <main class="flex-fill container py-4">
+    <main id="mainContent" class="flex-fill container py-4" tabindex="-1">
       <%- body %>
     </main>
     <%- include('partials/_footer'); %>
