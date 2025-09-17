@@ -5,7 +5,16 @@ import bcrypt from 'bcryptjs';
 
 /** Data model interfaces */
 export type PlanCode = 'APP_SUMO_TIER1' | 'APP_SUMO_TIER2' | 'TRIAL' | 'UNLIMITED';
-export interface Account { id: string; name: string; createdAt: string; plan: PlanCode; currentPeriodStart: string; currentPeriodEnd: string; }
+export interface Account {
+  id: string;
+  name: string;
+  createdAt: string;
+  plan: PlanCode;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  cancelAtPeriodEnd?: boolean;
+  canceledAt?: string | null;
+}
 export interface User { id: string; accountId: string; email: string; role: 'owner' | 'member'; passwordHash: string; createdAt: string; }
 export interface ApiKey { id: string; accountId: string; key: string; label: string; createdAt: string; disabledAt?: string | null; }
 export interface Event { id: string; accountId: string; app?: string; type: string; ts: string; userId?: string; sessionId?: string; properties?: Record<string, any>; sourceIp?: string; userAgent?: string; payload?: any; }
@@ -119,7 +128,15 @@ async function seedIfNeeded(r: Repos) {
   const now = Date.now();
   const periodStart = new Date(now).toISOString();
   const periodEnd = new Date(now + 14 * 24 * 60 * 60 * 1000).toISOString();
-  const account = await r.accountRepo.create({ name: 'Demo Account', createdAt: new Date(now).toISOString(), plan: 'TRIAL', currentPeriodStart: periodStart, currentPeriodEnd: periodEnd });
+  const account = await r.accountRepo.create({
+    name: 'Demo Account',
+    createdAt: new Date(now).toISOString(),
+    plan: 'TRIAL',
+    currentPeriodStart: periodStart,
+    currentPeriodEnd: periodEnd,
+    cancelAtPeriodEnd: false,
+    canceledAt: null
+  });
   // Placeholder password: demo1234
   const passwordHash = await hashPassword('demo1234');
   const owner = await r.userRepo.create({ accountId: account.id, email: 'owner@example.com', role: 'owner', passwordHash, createdAt: new Date(now).toISOString() });

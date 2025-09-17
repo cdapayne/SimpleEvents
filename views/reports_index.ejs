@@ -1,6 +1,6 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h1 class="h5 mb-0">Reports</h1>
-  <a href="/reports/new" class="btn btn-sm btn-primary">New Report</a>
+  <a href="/reports/new" class="btn btn-sm btn-primary">Create Chart</a>
 </div>
 <% if (!reports.length) { %>
   <div class="alert alert-info small">No reports yet. Create your first one.</div>
@@ -14,8 +14,9 @@
             <td><a href="/reports/<%= r.id %>"><%= r.name %></a></td>
             <td class="small text-muted"><%= r.definition.chartType || 'line' %></td>
             <td class="small text-muted"><%= new Date(r.createdAt).toLocaleString() %></td>
-            <td class="text-end d-flex gap-2 justify-content-end">
+            <td class="text-end d-flex gap-2 justify-content-end flex-wrap">
               <a class="btn btn-sm btn-outline-secondary" href="/reports/<%= r.id %>">Open</a>
+              <a class="btn btn-sm btn-outline-success" href="/reports/<%= r.id %>/export.csv" download>Export CSV</a>
               <button class="btn btn-sm btn-outline-primary add-dash" data-id="<%= r.id %>">Add</button>
             </td>
           </tr>

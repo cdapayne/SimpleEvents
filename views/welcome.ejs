@@ -1,0 +1,285 @@
+<div class="welcome-logo">
+  <svg viewBox="0 0 64 64" aria-hidden="true" class="welcome-logo-icon">
+    <defs>
+      <linearGradient id="welcomeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#ff6a3a" />
+        <stop offset="100%" stop-color="#bc4bff" />
+      </linearGradient>
+    </defs>
+    <path d="M8 8h34c4.4 0 8 3.6 8 8v22c0 4.4-3.6 8-8 8H28l-9 10v-10H8c-4.4 0-8-3.6-8-8V16c0-4.4 3.6-8 8-8z" fill="url(#welcomeGradient)" />
+    <rect x="16" y="26" width="6" height="10" rx="1.5" fill="#1b1240" opacity="0.9" />
+    <rect x="26" y="22" width="6" height="14" rx="1.5" fill="#1b1240" opacity="0.9" />
+    <rect x="36" y="18" width="6" height="18" rx="1.5" fill="#1b1240" opacity="0.9" />
+    <path d="M38 6h14c4.4 0 8 3.6 8 8v24c0 4.4-3.6 8-8 8h-6l-6 7V14c0-4.4 3.6-8 8-8z" fill="#d6d8de" opacity="0.8" />
+  </svg>
+  <div class="welcome-logo-text">
+    <div class="welcome-logo-title">Evently</div>
+    <div class="welcome-logo-sub">Simple Analytics</div>
+  </div>
+</div>
+<section class="welcome-hero container-fluid py-5">
+  <div class="container py-4">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-6">
+        <div class="hero-copy">
+          <div class="eyebrow mb-3">Product analytics that feels joyful</div>
+          <h1 class="display-5 fw-bold mb-3">Understand every customer journey in minutes, not weeks.</h1>
+          <p class="lead text-light mb-4">SimpleEvents turns raw event data into polished dashboards, charting real-time activation, retention, and revenue without a single SQL query.</p>
+          <div class="d-flex flex-wrap gap-3">
+            <a href="/register" class="btn btn-lg btn-primary text-white shadow-lg">Start for free</a>
+            <a href="#live-demo" class="btn btn-lg btn-outline-light">Watch the live demo</a>
+          </div>
+          <div class="d-flex align-items-center gap-3 mt-4 text-light small opacity-75">
+            <span class="d-flex align-items-center gap-2"><span class="badge bg-success">New</span> AI-assisted insight summaries</span>
+            <span class="d-flex align-items-center gap-2"><span class="badge bg-info">99.9%</span> uptime</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="demo-panel shadow-xl" id="live-demo">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <span class="badge bg-gradient text-uppercase small">Interactive preview</span>
+              <h2 class="h5 text-white mb-0" id="demoTitle">Acquisition Pulse</h2>
+            </div>
+            <div class="btn-group btn-group-sm" id="demoSwitch" role="group" aria-label="Sample dataset selector">
+              <button type="button" class="btn btn-outline-light active" data-key="acquisition">Acquisition</button>
+              <button type="button" class="btn btn-outline-light" data-key="activation">Activation</button>
+              <button type="button" class="btn btn-outline-light" data-key="revenue">Revenue</button>
+            </div>
+          </div>
+          <div class="demo-chart" aria-live="polite">
+            <canvas id="demoChart" height="220"></canvas>
+          </div>
+          <div class="demo-controls d-flex flex-wrap align-items-center gap-3 mt-3">
+            <div class="btn-group btn-group-sm" id="demoType" role="group" aria-label="Chart type selector">
+              <button type="button" class="btn btn-outline-light active" data-demo-chart="line">Line</button>
+              <button type="button" class="btn btn-outline-light" data-demo-chart="bar">Bar</button>
+              <button type="button" class="btn btn-outline-light" data-demo-chart="doughnut">Doughnut</button>
+            </div>
+            <span class="text-light small opacity-75">Tip: hover the chart to preview exact values.</span>
+          </div>
+          <div class="demo-insights mt-4 text-light">
+            <div class="row g-3">
+              <div class="col-12 col-md-4">
+                <div class="insight-tile">
+                  <div class="label">Top Event</div>
+                  <div class="value" id="demoTopEvent">signup.started</div>
+                </div>
+              </div>
+              <div class="col-12 col-md-4">
+                <div class="insight-tile">
+                  <div class="label">7-day growth</div>
+                  <div class="value" id="demoGrowth">+28%</div>
+                </div>
+              </div>
+              <div class="col-12 col-md-4">
+                <div class="insight-tile">
+                  <div class="label" id="demoSpotlightLabel">Conversion rate</div>
+                  <div class="value" id="demoSpotlightValue">4.7%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="container py-5">
+  <div class="row g-4 align-items-stretch">
+    <div class="col-md-4">
+      <div class="welcome-card h-100">
+        <h3 class="h6 text-uppercase text-muted mb-3">Drop-in SDKs</h3>
+        <p class="mb-3">Ingest events from web, mobile, and serverless apps with a single API key. Our smart batching keeps data fresh without throttling.</p>
+        <code class="code-snippet">evently.track('user.signup', { plan: 'pro' })</code>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="welcome-card h-100">
+        <h3 class="h6 text-uppercase text-muted mb-3">Team-ready dashboards</h3>
+        <p class="mb-3">Drag, resize, and duplicate charts to build executive-ready dashboards in seconds. Share securely with role-based access.</p>
+        <ul class="list-unstyled small mb-0">
+          <li>✔ Unlimited saved charts</li>
+          <li>✔ Scheduled email digests</li>
+          <li>✔ Dark-mode friendly exports</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="welcome-card h-100">
+        <h3 class="h6 text-uppercase text-muted mb-3">Instant insights</h3>
+        <p class="mb-3">AI summarises what changed overnight, highlighting anomalies and opportunities before your stand-up begins.</p>
+        <div class="insight-callout">“Activation climbed 14% after last week's launch.”</div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="container py-5">
+  <div class="cta-panel text-center text-light shadow-lg">
+    <h2 class="display-6 fw-bold mb-3">Ready to give your product team superpowers?</h2>
+    <p class="lead mb-4">Join founders and growth teams who monitor funnels, retention, and revenue without leaving their browser.</p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+      <a href="/register" class="btn btn-lg btn-light text-dark">Create your workspace</a>
+      <a href="/login" class="btn btn-lg btn-outline-light">Sign in</a>
+    </div>
+  </div>
+</section>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script nonce="<%= cspNonce %>">
+(function(){
+  const root = document.documentElement;
+  root.setAttribute('data-theme','dark');
+  try { localStorage.setItem('se_theme_v1','dark'); } catch (e) {}
+
+  const palette = ['#60a5fa','#f472b6','#34d399','#fbbf24','#818cf8'];
+  const ctx = document.getElementById('demoChart').getContext('2d');
+  const datasetButtons = document.querySelectorAll('#demoSwitch button');
+  const chartTypeButtons = document.querySelectorAll('[data-demo-chart]');
+  const title = document.getElementById('demoTitle');
+  const topEvent = document.getElementById('demoTopEvent');
+  const growth = document.getElementById('demoGrowth');
+  const spotlightLabel = document.getElementById('demoSpotlightLabel');
+  const spotlightValue = document.getElementById('demoSpotlightValue');
+
+  const datasets = {
+    acquisition: {
+      title: 'Acquisition Pulse',
+      top: 'signup.started',
+      growth: '+28%',
+      spotlight: { label: 'Conversion rate', value: '4.7%' },
+      trend: { labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], data: [45,62,58,74,89,105,122] },
+      channels: { labels: ['Organic','Paid','Referral','Partners'], data: [42,31,18,9] }
+    },
+    activation: {
+      title: 'Activation Health',
+      top: 'workspace.created',
+      growth: '+18%',
+      spotlight: { label: 'Day-7 activation', value: '63%' },
+      trend: { labels: ['Week 1','Week 2','Week 3','Week 4','Week 5'], data: [38,44,57,68,76] },
+      channels: { labels: ['Guided onboarding','Self-serve','Invites'], data: [48,33,19] }
+    },
+    revenue: {
+      title: 'Revenue Momentum',
+      top: 'subscription.upgraded',
+      growth: '+42%',
+      spotlight: { label: 'MRR this week', value: '$48.2k' },
+      trend: { labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul'], data: [21,26,33,38,46,54,63] },
+      channels: { labels: ['Starter','Growth','Scale','Enterprise'], data: [28,32,21,19] }
+    }
+  };
+
+  let activeDataset = 'acquisition';
+  let activeChartType = 'line';
+  let chart;
+
+  function buildChartConfig(data, type) {
+    if (type === 'doughnut') {
+      const source = data.channels || data.trend;
+      return {
+        type: 'doughnut',
+        data: {
+          labels: source.labels,
+          datasets: [{
+            data: source.data,
+            backgroundColor: source.labels.map((_, idx) => palette[idx % palette.length]),
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#e2e8f0' } }
+          }
+        }
+      };
+    }
+
+    const baseType = type;
+    const isLine = baseType === 'line';
+    const isBar = baseType === 'bar';
+    return {
+      type: baseType,
+      data: {
+        labels: data.trend.labels,
+        datasets: [{
+          label: data.title,
+          data: data.trend.data,
+          fill: isLine,
+          tension: 0.35,
+          borderColor: 'rgba(96,165,250,0.95)',
+          backgroundColor: isBar ? 'rgba(96,165,250,0.35)' : 'rgba(96,165,250,0.20)',
+          borderWidth: 2,
+          borderRadius: isBar ? 8 : 0,
+          pointRadius: 3,
+          pointHoverRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { mode: 'index', intersect: false }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(148,163,184,0.12)' },
+            ticks: { color: '#cbd5f5' }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(148,163,184,0.12)' },
+            ticks: { color: '#cbd5f5' }
+          }
+        }
+      }
+    };
+  }
+
+  function setActiveState(buttons, attr, value) {
+    buttons.forEach(btn => {
+      if (btn.getAttribute(attr) === value) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+
+  function render() {
+    const data = datasets[activeDataset] || datasets.acquisition;
+    title.textContent = data.title;
+    topEvent.textContent = data.top;
+    growth.textContent = data.growth;
+    if (data.spotlight) {
+      spotlightLabel.textContent = data.spotlight.label;
+      spotlightValue.textContent = data.spotlight.value;
+    }
+    const config = buildChartConfig(data, activeChartType);
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, config);
+  }
+
+  datasetButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeDataset = btn.getAttribute('data-key') || activeDataset;
+      setActiveState(datasetButtons, 'data-key', activeDataset);
+      render();
+    });
+  });
+
+  chartTypeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeChartType = btn.getAttribute('data-demo-chart') || activeChartType;
+      setActiveState(chartTypeButtons, 'data-demo-chart', activeChartType);
+      render();
+    });
+  });
+
+  setActiveState(datasetButtons, 'data-key', activeDataset);
+  setActiveState(chartTypeButtons, 'data-demo-chart', activeChartType);
+  render();
+})();
+</script>

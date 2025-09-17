@@ -1,0 +1,113 @@
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+  <div>
+    <h1 class="h4 mb-1">Billing & Plan</h1>
+    <p class="text-muted mb-0">Manage your subscription, view upcoming renewals, and adjust your plan.</p>
+  </div>
+</div>
+<% if (cancelled) { %>
+  <div class="alert alert-warning d-flex align-items-center gap-2" role="status">
+    <span class="fw-semibold">Cancellation scheduled.</span>
+    <span class="small">Your account will stay active until the end of the current cycle.</span>
+  </div>
+<% } %>
+<% if (upgradedLabel) { %>
+  <div class="alert alert-success" role="status">
+    <span class="fw-semibold">Plan upgraded!</span> You're now on <%= upgradedLabel %>.
+  </div>
+<% } %>
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body d-flex flex-column gap-2">
+        <span class="badge bg-primary-subtle text-primary-emphasis align-self-start">Current Tier</span>
+        <h2 class="h5 mb-1"><%= planInfo.tierLabel %></h2>
+        <p class="text-muted small mb-2">Plan: <%= plan.name %></p>
+        <p class="mb-0">
+          <% if (plan.monthlyEventLimit === Infinity) { %>
+            Unlimited tracked events each month.
+          <% } else { %>
+            <strong><%= plan.monthlyEventLimit.toLocaleString() %></strong> events included monthly.
+          <% } %>
+        </p>
+        <p class="text-muted small mb-0">Renewal period start: <%= account.currentPeriodStart ? new Date(account.currentPeriodStart).toLocaleDateString() : 'Not set' %></p>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body d-flex flex-column gap-2">
+        <span class="badge bg-info-subtle text-info-emphasis align-self-start">Next Invoice</span>
+        <h2 class="h5 mb-1">Next charge</h2>
+        <p class="mb-1 fw-semibold">
+          <%= nextChargeDate ? nextChargeDate.toLocaleString() : 'No renewal scheduled' %>
+        </p>
+        <p class="text-muted small mb-0">We'll remind you 3 days before your renewal.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body d-flex flex-column gap-2">
+        <span class="badge bg-danger-subtle text-danger align-self-start">Membership</span>
+        <h2 class="h5 mb-1">Cancel membership</h2>
+        <% if (cancelScheduled) { %>
+          <p class="text-muted small mb-0">Cancellation is already scheduled for period end. Your workspace will remain active until then.</p>
+        <% } else { %>
+          <p class="text-muted small">Need to leave? You can cancel at the end of the current billing cycle.</p>
+          <form method="POST" action="/billing/cancel" class="d-flex flex-column gap-2">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Cancel at period end?');">Schedule cancellation</button>
+          </form>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+<section id="upgrade" class="mt-5">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <h2 class="h5 mb-0">Upgrade options</h2>
+    <% if (!planInfo.canUpgrade) { %>
+      <span class="badge bg-success-subtle text-success">You're on the top tier</span>
+    <% } %>
+  </div>
+  <% if (planInfo.canUpgrade) { %>
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-body d-flex flex-column gap-3">
+          <div>
+            <h3 class="h6 mb-1"><%= planInfo.nextLabel %></h3>
+            <% if (planInfo.nextCode === 'APP_SUMO_TIER1') { %>
+              <p class="text-muted small mb-0">Unlock higher event quotas and additional reporting slices perfect for growing teams.</p>
+            <% } else if (planInfo.nextCode === 'APP_SUMO_TIER2') { %>
+              <p class="text-muted small mb-0">Increase capacity five-fold and collaborate with unlimited saved charts.</p>
+            <% } else if (planInfo.nextCode === 'UNLIMITED') { %>
+              <p class="text-muted small mb-0">Go unlimited with white-glove support, SLAs, and premium onboarding.</p>
+            <% } else { %>
+              <p class="text-muted small mb-0">Step up to the next tier for more volume and advanced capabilities.</p>
+            <% } %>
+          </div>
+          <form method="POST" action="/billing/upgrade" class="mt-auto">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn btn-primary">Upgrade to <%= planInfo.nextLabel %></button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h3 class="h6 mb-2">What you get</h3>
+          <ul class="small mb-0 ps-3">
+            <li>Higher monthly event allowance</li>
+            <li>Priority product support</li>
+            <li>Early access to new dashboard components</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <% } else { %>
+    <p class="text-muted">You're already enjoying everything we offer. Thanks for being a top-tier customer!</p>
+  <% } %>
+</section>

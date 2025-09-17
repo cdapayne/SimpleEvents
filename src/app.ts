@@ -6,7 +6,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import cookieSession from 'cookie-session';
 import csrf from 'csurf';
-import { getRepos } from './lib/db';
+import { getRepos, Account, PlanCode } from './lib/db';
 import { requireAuth, hashPassword, comparePassword, loadSessionUser } from './lib/auth';
 import crypto from 'crypto';
 import { apiKeyAuth } from './middleware/apiKeyAuth';
@@ -25,6 +25,29 @@ import fs from 'fs';
 dotenv.config();
 
 const app = express();
+
+const PLAN_TIERS: Record<PlanCode, { label: string; tier: number }> = {
+  TRIAL: { label: 'Trial', tier: 0 },
+  APP_SUMO_TIER1: { label: 'Tier 1', tier: 1 },
+  APP_SUMO_TIER2: { label: 'Tier 2', tier: 2 },
+  UNLIMITED: { label: 'Tier 3', tier: 3 }
+};
+
+const PLAN_LADDER: PlanCode[] = ['TRIAL', 'APP_SUMO_TIER1', 'APP_SUMO_TIER2', 'UNLIMITED'];
+
+function describePlan(plan?: PlanCode) {
+  const safe = plan && PLAN_TIERS[plan] ? plan : 'TRIAL';
+  const meta = PLAN_TIERS[safe];
+  const idx = PLAN_LADDER.indexOf(safe);
+  const nextCode = idx >= 0 && idx < PLAN_LADDER.length - 1 ? PLAN_LADDER[idx + 1] : null;
+  return {
+    code: safe,
+    tierLabel: meta.label,
+    tier: meta.tier,
+    nextCode,
+    nextLabel: nextCode ? PLAN_TIERS[nextCode].label : null
+  };
+}
 
 // File uploads (branding logos)
 const uploadDir = path.join(__dirname,'..','public','uploads');
@@ -102,44 +125,76 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 // Expose common locals
 app.use(loadSessionUser);
-app.use((req: Request, res: Response, next: NextFunction) => {
+app.use(async (req: Request, res: Response, next: NextFunction) => {
   res.locals.appName = APP_NAME;
   if (!req.path.startsWith('/api/')) {
     if (typeof (req as any).csrfToken === 'function') {
       res.locals.csrfToken = (req as any).csrfToken();
     }
   }
-  res.locals.sessionUser = (req.session as any)?.user || null;
+  const sessionUser = (req.session as any)?.user || null;
+  res.locals.sessionUser = sessionUser;
+  res.locals.accountPlan = null;
+  res.locals.accountTierLabel = null;
+  res.locals.accountTier = null;
+  res.locals.canUpgradePlan = false;
+  res.locals.nextPlanCode = null;
+  res.locals.nextPlanLabel = null;
+  if (sessionUser) {
+    try {
+      const { accountRepo } = getRepos();
+      const account = await accountRepo.find(sessionUser.accountId) as Account | undefined;
+      if (account) {
+        const planInfo = describePlan(account.plan);
+        res.locals.accountPlan = getPlanDefinition(planInfo.code);
+        res.locals.accountTierLabel = planInfo.tierLabel;
+        res.locals.accountTier = planInfo.tier;
+        res.locals.canUpgradePlan = Boolean(planInfo.nextCode);
+        res.locals.nextPlanCode = planInfo.nextCode;
+        res.locals.nextPlanLabel = planInfo.nextLabel;
+      }
+    } catch (err) {
+      // swallow plan lookup errors for unauthenticated-friendly rendering
+    }
+  }
   next();
 });
 
 // Routes
-app.get('/', requireAuth, async (req: Request, res: Response) => {
-  const { apiKeyRepo } = getRepos();
-  const accountId = (req.session as any).user.accountId;
-  const apiKeyRecord = (await apiKeyRepo.all()).find(k => k.accountId === accountId && !k.disabledAt);
-  const apiKey = apiKeyRecord?.key || '';
-  res.render('index', { title: 'Dashboard', apiKey });
-});
-
-// Overview page (extracted from dashboard index)
-app.get('/overview', requireAuth, async (req: Request, res: Response) => {
-  const { eventRepo, accountRepo, userRepo, apiKeyRepo } = getRepos();
-  const [eventsCount, accountsCount, usersCount] = await Promise.all([
-    eventRepo.count(),
-    accountRepo.count(),
-    userRepo.count()
-  ]);
-  const accountId = (req.session as any).user.accountId;
-  const account = (await accountRepo.all()).find(a => a.id === accountId)!;
-  const planDef = getPlanDefinition(account.plan);
-  const usage = await getOrCreateCurrentUsage(account);
-  const limit = planDef.monthlyEventLimit;
-  const percent = usagePercent(limit, usage.events);
-  const nearLimit = isFinite(limit) && percent >= 90;
-  const apiKeyRecord = (await apiKeyRepo.all()).find(k => k.accountId === accountId && !k.disabledAt);
-  const apiKey = apiKeyRecord?.key || '';
-  res.render('overview', { title: 'Overview', eventsCount, accountsCount, usersCount, plan: planDef, usage, limit, percent, nearLimit, apiKey });
+app.get('/', async (req: Request, res: Response, next: NextFunction) => {
+  const sessionUser = (req.session as any)?.user;
+  if (!sessionUser) {
+    return res.render('welcome', {
+      title: 'Welcome',
+      bodyClass: 'welcome-body',
+      mainClass: 'welcome-main p-0',
+      hideNavbar: true,
+      hideFooter: true
+    });
+  }
+  try {
+    const { eventRepo, accountRepo, userRepo, apiKeyRepo } = getRepos();
+    const [eventsCount, accountsCount, usersCount] = await Promise.all([
+      eventRepo.count(),
+      accountRepo.count(),
+      userRepo.count()
+    ]);
+    const account = await accountRepo.find(sessionUser.accountId);
+    if (!account) {
+      (req.session as any).user = undefined;
+      return res.redirect('/');
+    }
+    const planDef = getPlanDefinition(account.plan);
+    const usage = await getOrCreateCurrentUsage(account);
+    const limit = planDef.monthlyEventLimit;
+    const percent = usagePercent(limit, usage.events);
+    const nearLimit = isFinite(limit) && percent >= 90;
+    const apiKeyRecord = (await apiKeyRepo.all()).find(k => k.accountId === account.id && !k.disabledAt);
+    const apiKey = apiKeyRecord?.key || '';
+    res.render('index', { title: 'Dashboard', eventsCount, accountsCount, usersCount, plan: planDef, usage, limit, percent, nearLimit, apiKey });
+  } catch (e) {
+    next(e);
+  }
 });
 
 // Branding configuration screen

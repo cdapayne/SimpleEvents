@@ -11,6 +11,7 @@
           <li class="nav-item"><a class="nav-link <%= (title==='Overview') ? 'active' : '' %>" href="/overview" <%= (title==='Overview') ? 'aria-current="page"' : '' %>>Overview</a></li>
           <li class="nav-item"><a class="nav-link <%= (title==='Events') ? 'active' : '' %>" href="/events" <%= (title==='Events') ? 'aria-current="page"' : '' %>>Events</a></li>
           <li class="nav-item"><a class="nav-link <%= (title==='Reports') ? 'active' : '' %>" href="/reports" <%= (title==='Reports') ? 'aria-current="page"' : '' %>>Reports</a></li>
+          <li class="nav-item"><a class="nav-link <%= (title==='Create Chart') ? 'active' : '' %>" href="/reports/new" <%= (title==='Create Chart') ? 'aria-current="page"' : '' %>>Create Chart</a></li>
           <li class="nav-item"><a class="nav-link <%= (title==='Branding') ? 'active' : '' %>" href="/branding" <%= (title==='Branding') ? 'aria-current="page"' : '' %>>Branding</a></li>
           <li class="nav-item"><a class="nav-link <%= (title==='API Keys') ? 'active' : '' %>" href="/apikeys" <%= (title==='API Keys') ? 'aria-current="page"' : '' %>>API Keys</a></li>
           <li class="nav-item"><a class="nav-link <%= (title==='Billing') ? 'active' : '' %>" href="/billing" <%= (title==='Billing') ? 'aria-current="page"' : '' %>>Billing</a></li>
@@ -20,6 +21,17 @@
         <% } %>
       </ul>
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
+  <% if (typeof sessionUser !== 'undefined' && sessionUser && typeof accountTierLabel !== 'undefined' && accountTierLabel) { %>
+        <li class="nav-item me-3">
+          <span class="badge bg-primary-subtle text-primary-emphasis d-flex align-items-center gap-2 px-3 py-2 tier-pill" title="<%= accountPlan ? accountPlan.name : '' %>">
+            <span class="small text-uppercase fw-semibold">Tier</span>
+            <span class="fw-semibold"><%= accountTierLabel %></span>
+          </span>
+        </li>
+        <% if (canUpgradePlan) { %>
+        <li class="nav-item me-2"><a class="btn btn-sm btn-outline-light" href="/billing#upgrade"><%= nextPlanLabel ? 'Upgrade to '+nextPlanLabel : 'Upgrade' %></a></li>
+        <% } %>
+  <% } %>
         <li class="nav-item me-2">
           <button type="button" class="btn btn-sm btn-outline-light" id="themeToggle" aria-label="Toggle theme">🌙</button>
         </li>
@@ -32,7 +44,7 @@
             </form>
           </li>
         <% } else { %>
-          <li class="nav-item"><a class="nav-link <%= (title==='Login') ? 'active' : '' %>" href="/login">Login</a></li>
+          <li class="nav-item me-2"><a class="btn btn-sm btn-outline-light" href="/login">Login</a></li>
           <li class="nav-item"><a class="nav-link <%= (title==='Register') ? 'active' : '' %>" href="/register">Register</a></li>
         <% } %>
       </ul>

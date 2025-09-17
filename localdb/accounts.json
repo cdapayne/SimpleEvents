@@ -8,8 +8,9 @@
     "id": "76c9bdd3-ea37-4cbe-82e0-e2896f3ffc38",
     "name": "carlton.payne's Account",
     "createdAt": "2025-09-13T01:39:05.240Z",
-    "plan": "TRIAL",
+    "plan": "UNLIMITED",
     "currentPeriodStart": "2025-09-13T01:39:05.240Z",
-    "currentPeriodEnd": "2025-09-27T01:39:05.240Z"
+    "currentPeriodEnd": "2025-09-27T01:39:05.240Z",
+    "cancelAtPeriodEnd": false
   }
 ]

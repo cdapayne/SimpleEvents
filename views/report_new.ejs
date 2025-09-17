@@ -1,7 +1,7 @@
 <div class="row g-3">
   <div class="col-lg-4">
     <form id="reportForm" class="card card-body shadow-sm small gap-2" style="border-radius:1rem;">
-      <h6 class="fw-semibold mb-2">New Report</h6>
+      <h6 class="fw-semibold mb-2">Create Chart</h6>
       <div class="row g-2">
         <div class="col-12">
           <label class="form-label">Name</label>
@@ -98,6 +98,13 @@
   <div class="col-lg-8">
     <div class="card shadow-sm mb-3" style="border-radius:1rem;">
       <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <div>
+            <h6 class="mb-0 text-muted small text-uppercase">Preview</h6>
+            <small class="text-muted">Adjust the builder to refresh instantly.</small>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="downloadChartBtn">Export Image</button>
+        </div>
         <canvas id="reportChart" height="160"></canvas>
       </div>
     </div>
@@ -153,13 +160,17 @@
   const now = new Date();
   const from = new Date(now.getTime() - 7*24*3600*1000);
   const form = document.getElementById('reportForm');
+  const downloadBtn = document.getElementById('downloadChartBtn');
   form.from.value = isoLocal(from); form.to.value = isoLocal(now);
-  let chart; function renderChart(payload){
+  if(downloadBtn) downloadBtn.disabled = true;
+  let chart;
+  function renderChart(payload){
     const ctx = document.getElementById('reportChart').getContext('2d');
     if(chart) chart.destroy();
     const chartType = payload.chartType === 'area' ? 'line' : payload.chartType;
     const cfg = { type: chartType, data: { labels: payload.labels, datasets: payload.datasets.map(d=>({label:d.label,data:d.data, fill: payload.chartType==='area', tension: payload.chartType==='area'?0.35:0, borderWidth:1})) }, options:{ responsive:true, scales: (chartType==='pie'||chartType==='doughnut'||chartType==='radar'||chartType==='polarArea')?{}:{ y:{ beginAtZero:true } } } };
     chart = new Chart(ctx, cfg);
+    if(downloadBtn) downloadBtn.disabled = false;
   }
   function renderTable(payload){
     const head = document.getElementById('reportHead');
@@ -278,6 +289,7 @@
       document.getElementById('reportBody').innerHTML=`<tr><td class="fw-semibold display-6 text-center" colspan="4">${(data.total??data.value??'0')}</td></tr>`;
       if(chart){ chart.destroy(); chart=null; }
     }
+    if(downloadBtn) downloadBtn.disabled = data.chartType === 'number';
     if(!silent) renderTable(data);
     // Render sample events if present
     if(data.rawSamples){
@@ -300,6 +312,22 @@
   // attach buttons (assumes existing listeners removed)
   form.addEventListener('submit', e=>{ e.preventDefault(); submit(false, false); });
   document.getElementById('saveDashBtn').addEventListener('click', ()=> submit(true));
+  function currentChartName(){
+    const el = form.querySelector('[name="name"]');
+    return el ? (el.value || '') : '';
+  }
+  function sanitizeFileName(name){
+    return (name||'chart').toString().trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'chart';
+  }
+  if(downloadBtn){
+    downloadBtn.addEventListener('click', ()=>{
+      if(!chart){ return; }
+      const link = document.createElement('a');
+      link.href = chart.toBase64Image('image/png', 1);
+      link.download = sanitizeFileName(currentChartName()) + '.png';
+      link.click();
+    });
+  }
   // after meta loaded add initial filter row
   (async function(){ META = await fetch('/api/v1/events/meta').then(r=>r.ok?r.json():META); renderSelection(); populateValueFields(); addFilterRow(); schedulePreview(); })();
 })();
