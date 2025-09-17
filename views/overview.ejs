@@ -1,0 +1,172 @@
+<div class="pb-3 border-bottom mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <div class="d-flex align-items-center gap-3">
+    <h1 class="h3 mb-0">Overview</h1>
+  </div>
+</div>
+<div id="overviewRow" class="row g-4">
+  <div class="col-md-6 col-lg-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title d-flex justify-content-between align-items-center">Getting Started <span class="badge bg-primary">New</span></h5>
+        <ol class="small ps-3 mb-3" id="onboardSteps">
+          <li data-step="key">Create an API Key <a href="/apikeys" class="ms-1">Open</a></li>
+          <li data-step="event">Send a Test Event <button class="btn btn-link btn-sm p-0" data-bs-toggle="modal" data-bs-target="#testEventModal">Send</button></li>
+          <li data-step="view">View Events <a href="/events" class="ms-1">Go</a></li>
+          <li data-step="report">Build a Report <a href="/reports/new" class="ms-1">Build</a></li>
+        </ol>
+        <div class="alert alert-info small mb-0" id="onboardHint">Complete the steps above to finish setup.</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Events Tracked</h5>
+        <p class="display-6 fw-semibold text-primary"><%= eventsCount %></p>
+        <p class="text-muted small mb-0">Across <%= accountsCount %> account(s).</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Plan Usage</h5>
+        <p class="mb-1 small text-muted"><%= plan.name %></p>
+        <% if (isFinite(limit)) { %>
+        <div class="progress mb-2" style="height: 16px;">
+          <div class="progress-bar <%= nearLimit ? 'bg-danger' : 'bg-success' %>" role="progressbar" data-percent="<%= percent %>" aria-valuenow="<%= percent %>" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <p class="small mb-0"><%= usage.events %> / <%= limit.toLocaleString() %> events (<%= percent %>%)</p>
+        <% } else { %>
+        <p class="h5 mb-0">Unlimited</p>
+        <% } %>
+        <% if (nearLimit) { %>
+        <div class="alert alert-warning mt-3 p-2 small mb-0">You're at <%= percent %>% of your event quota.</div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Users</h5>
+        <p class="display-6 fw-semibold text-primary"><%= usersCount %></p>
+        <p class="text-muted small mb-0">Seed demo owner included.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="card-title">Last Ingest</h5>
+        <p class="display-6 fw-semibold text-primary">Recent</p>
+        <p class="text-muted small mb-0">Events generated on seed.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Test Event Modal (reuse from dashboard) -->
+<div class="modal fade" id="testEventModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Send a Test Event</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <p class="small text-muted">Use one of the examples below to send a quick event. Replace values as needed.</p>
+        <ul class="nav nav-tabs mb-3" role="tablist">
+          <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#curlTab" type="button">cURL</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#jsTab" type="button">JavaScript</button></li>
+          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#pyTab" type="button">Python</button></li>
+        </ul>
+        <div class="tab-content small">
+          <div class="tab-pane fade show active" id="curlTab">
+            <pre class="bg-light p-2 border small" id="curlSnippet"></pre>
+          </div>
+          <div class="tab-pane fade" id="jsTab">
+            <pre class="bg-light p-2 border small" id="jsSnippet"></pre>
+          </div>
+            <div class="tab-pane fade" id="pyTab">
+            <pre class="bg-light p-2 border small" id="pySnippet"></pre>
+          </div>
+        </div>
+  <button class="btn btn-sm btn-primary" id="sendFromBrowser">Send From Browser</button>
+  <div class="text-muted small mt-2">Each send includes a random sample phrase.</div>
+        <span id="testEventStatus" class="small ms-2"></span>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button></div>
+    </div>
+  </div>
+</div>
+
+<script nonce="<%= cspNonce %>">
+  document.querySelectorAll('.progress-bar[data-percent]')?.forEach(function(el){
+    var p = el.getAttribute('data-percent');
+    if(p) el.style.width = p + '%';
+  });
+  (function(){
+  const apiKey = '<%= (apiKey || "") %>';
+    const curl = `curl -X POST -H "Content-Type: application/json" -H "X-API-Key: ${apiKey}" -d '{"app":"demo","type":"test.event","payload":{"source":"curl"}}' <%= (process.env.APP_BASE_URL||'http://localhost:3000') %>/api/v1/events/ingest`;
+    const js = `fetch('<%= (process.env.APP_BASE_URL||'http://localhost:3000') %>/api/v1/events/ingest',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':'${apiKey}'},body:JSON.stringify({app:'demo',type:'test.event',payload:{source:'js'}})}).then(r=>r.json()).then(console.log);`;
+    const py = `import requests, json\nprint(requests.post('<%= (process.env.APP_BASE_URL||'http://localhost:3000') %>/api/v1/events/ingest',headers={'X-API-Key':'${apiKey}'},json={'app':'demo','type':'test.event','payload':{'source':'python'}}).json())`;
+    document.getElementById('curlSnippet').textContent = curl;
+    document.getElementById('jsSnippet').textContent = js;
+    document.getElementById('pySnippet').textContent = py;
+    const btn = document.getElementById('sendFromBrowser');
+    async function ensureSwal(){
+      if (window.Swal) return true;
+      return new Promise(resolve => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+        s.onload = () => resolve(true);
+        s.onerror = () => resolve(false);
+        document.head.appendChild(s);
+      });
+    }
+    const phrases = [
+      'alpha launch',
+      'beta signup',
+      'user activated',
+      'plan upgraded',
+      'quota nearing',
+      'feature clicked',
+      'dashboard view',
+      'event processed'
+    ];
+    function randomPhrase(){ return phrases[Math.floor(Math.random()*phrases.length)]; }
+    btn.addEventListener('click', async ()=>{
+      const payload = {app:'demo',type:'test.event',payload:{origin:'browser', text: randomPhrase()}};
+      let res, out;
+      try {
+        res = await fetch('/api/v1/events/ingest',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':apiKey},body:JSON.stringify(payload)});
+        out = await res.json();
+        const success = res.ok;
+        document.getElementById('testEventStatus').textContent = success ? 'Sent ✔' : ('Error: '+(out.error||res.status));
+        await ensureSwal();
+        if (window.Swal) {
+          if (success) {
+            Swal.fire({
+              title: 'Test event sent',
+              icon: 'success',
+              html: '<p class="small text-start mb-2">Payload:</p><pre class="text-start bg-light p-2 border rounded small mb-0">'+
+                document.createTextNode(JSON.stringify(payload,null,2)).textContent + '</pre>',
+              confirmButtonText: 'Close'
+            });
+          } else {
+            Swal.fire({
+              title: 'Send failed',
+              icon: 'error',
+              text: (out && out.error) ? out.error : ('Status '+res.status),
+              confirmButtonText: 'Close'
+            });
+          }
+        }
+      } catch(err){
+        document.getElementById('testEventStatus').textContent = 'Error';
+        await ensureSwal();
+        if (window.Swal) {
+          Swal.fire({ title: 'Network error', icon: 'error', text: String(err), confirmButtonText: 'Close' });
+        }
+      }
+    });
+  })();
+</script>

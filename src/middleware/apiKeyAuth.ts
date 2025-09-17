@@ -15,8 +15,8 @@ export async function apiKeyAuth(req: Request, res: Response, next: NextFunction
   if (!key) return res.status(401).json({ error: 'Missing API key' });
   try {
     const { apiKeyRepo, accountRepo } = getRepos();
-    const apiKeys = await apiKeyRepo.all();
-    const record = apiKeys.find(k => k.key === key && !k.disabledAt);
+    const record = await apiKeyRepo.findByKey(key);
+    if (record?.disabledAt) return res.status(401).json({ error: 'Invalid API key' });
     if (!record) return res.status(401).json({ error: 'Invalid API key' });
     const account = await accountRepo.find(record.accountId);
     if (!account) return res.status(401).json({ error: 'Invalid API key' });

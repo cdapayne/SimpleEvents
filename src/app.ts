@@ -197,6 +197,33 @@ app.get('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+// Overview page (move dashboard overview here)
+app.get('/overview', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { eventRepo, accountRepo, userRepo, apiKeyRepo } = getRepos();
+    const [eventsCount, accountsCount, usersCount] = await Promise.all([
+      eventRepo.count(),
+      accountRepo.count(),
+      userRepo.count()
+    ]);
+    const account = await accountRepo.find((req.session as any).user.accountId);
+    if (!account) {
+      (req.session as any).user = undefined;
+      return res.redirect('/login');
+    }
+    const planDef = getPlanDefinition(account.plan);
+    const usage = await getOrCreateCurrentUsage(account);
+    const limit = planDef.monthlyEventLimit;
+    const percent = usagePercent(limit, usage.events);
+    const nearLimit = isFinite(limit) && percent >= 90;
+    const apiKeyRecord = (await apiKeyRepo.all()).find(k => k.accountId === account.id && !k.disabledAt);
+    const apiKey = apiKeyRecord?.key || '';
+    res.render('overview', { title: 'Overview', eventsCount, accountsCount, usersCount, plan: planDef, usage, limit, percent, nearLimit, apiKey });
+  } catch (e) {
+    next(e);
+  }
+});
+
 // Branding configuration screen
 app.get('/branding', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
