@@ -6,14 +6,18 @@ export interface PlanDefinition {
   code: PlanCode;
   name: string;
   monthlyEventLimit: number; // Infinity for unlimited
+  dashboardsLimit?: number; // number of dashboards allowed (Infinity for unlimited)
+  chartsLimit?: number; // number of saved charts or similar
+  includedChartTypes?: string[]; // chart types available
+  branding?: boolean; // whether branding capability is included
   trialDays?: number;
 }
 
 export const PLANS: Record<PlanCode, PlanDefinition> = {
-  APP_SUMO_TIER1: { code: 'APP_SUMO_TIER1', name: 'AppSumo Tier 1', monthlyEventLimit: 100_000 },
-  APP_SUMO_TIER2: { code: 'APP_SUMO_TIER2', name: 'AppSumo Tier 2', monthlyEventLimit: 500_000 },
-  TRIAL: { code: 'TRIAL', name: 'Trial', monthlyEventLimit: 10_000, trialDays: 14 },
-  UNLIMITED: { code: 'UNLIMITED', name: 'Unlimited', monthlyEventLimit: Infinity },
+  APP_SUMO_TIER1: { code: 'APP_SUMO_TIER1', name: 'Tier 1', monthlyEventLimit: 50_000, dashboardsLimit: 20, chartsLimit: 20, includedChartTypes: ['bar','line','pie'], branding: false },
+  APP_SUMO_TIER2: { code: 'APP_SUMO_TIER2', name: 'Tier 2', monthlyEventLimit: 500_000, dashboardsLimit: 50, chartsLimit: 50, includedChartTypes: ['bar','line','pie','doughnut','radar','polarArea','area'], branding: false },
+  TRIAL: { code: 'TRIAL', name: 'Free', monthlyEventLimit: 200, dashboardsLimit: 5, chartsLimit: 5, includedChartTypes: ['bar','line','pie'], trialDays: 14, branding: false },
+  UNLIMITED: { code: 'UNLIMITED', name: 'Tier 3', monthlyEventLimit: Infinity, dashboardsLimit: Infinity, chartsLimit: Infinity, includedChartTypes: ['*'], branding: true },
 };
 
 export function getPlanDefinition(plan: PlanCode): PlanDefinition {

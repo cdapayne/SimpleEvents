@@ -319,16 +319,29 @@ app.post('/logout', (req: Request, res: Response) => {
   res.redirect('/login');
 });
 
-// Protected placeholder pages
+// Protected placeholder pages (keep others here)
 const protectedPages: Array<[string, string]> = [
   // ['/events', 'Events'], // replaced with real implementation
   // '/apikeys' removed now that real API Keys implementation exists
-  ['/billing', 'Billing']
 ];
 protectedPages.forEach(([path, label]) => {
   app.get(path, requireAuth, (_req: Request, res: Response) => {
     res.render('placeholder', { title: label, heading: label });
   });
+});
+
+// Billing page (real implementation)
+app.get('/billing', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { accountRepo } = getRepos();
+    const accountId = (req.session as any).user.accountId;
+    const account = await accountRepo.find(accountId);
+    if (!account) return res.redirect('/');
+    const planDef = getPlanDefinition(account.plan);
+    // Provide all plan definitions for display
+    const plans = [getPlanDefinition('TRIAL'), getPlanDefinition('APP_SUMO_TIER1'), getPlanDefinition('APP_SUMO_TIER2'), getPlanDefinition('UNLIMITED')];
+    res.render('billing', { title: 'Billing', account, plan: planDef, plans, csrfToken: res.locals.csrfToken });
+  } catch (e) { next(e); }
 });
 
 // Dedicated events route

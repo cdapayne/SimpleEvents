@@ -212,3 +212,72 @@ input.form-control:focus, select.form-select:focus { border-color:var(--accent);
 .cta-panel .btn { min-width:200px; }
 .shadow-xl { box-shadow:0 30px 80px rgba(0,10,40,0.55); }
 .welcome-main { padding:0!important; width:100%; }
+
+/* Billing page specific improvements */
+.billing-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+.billing-card {
+	/* Dark-mode friendly card */
+	background: linear-gradient(180deg, #2b2f33 0%, #232629 100%);
+	color: #e6edf3; /* near-white for high contrast */
+	padding: 1.25rem;
+	border-radius: 12px;
+	border: 1px solid rgba(255,255,255,0.04);
+	box-shadow: 0 8px 0 rgba(0,0,0,0.45);
+	min-height: 220px;
+	display: flex;
+	flex-direction: column;
+}
+
+.billing-card h5, .billing-card h4, .billing-card h3 { color: #ffffff; }
+.billing-card .small.text-muted { color: rgba(230,237,243,0.7); }
+.billing-card .feature-list { margin-top: 0.75rem; margin-bottom: 1rem; color: rgba(201,212,220,0.9); }
+.billing-card .feature-list li { margin-bottom: 0.4rem; }
+.billing-card .price { font-weight: 700; color: #fff; font-size: 1.4rem; }
+.billing-card .card-cta { margin-top: auto; }
+
+/* Inputs inside billing cards (forms) */
+.billing-card input[type="text"],
+.billing-card input[type="email"],
+.billing-card select {
+	background: rgba(255,255,255,0.03);
+	color: #e6edf3;
+	border: 1px solid rgba(255,255,255,0.06);
+	padding: 0.5rem;
+	border-radius: 4px;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.billing-card input::placeholder {
+	color: rgba(230,237,243,0.55);
+}
+
+/* Highlight the current plan */
+.billing-card.current {
+	background: linear-gradient(180deg, #294246 0%, #233237 100%);
+	box-shadow: 0 10px 0 rgba(0,0,0,0.6);
+	border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Buttons inside billing cards */
+.billing-card .btn { padding: .6rem .9rem; border-radius: 8px; }
+.billing-card .btn-outline-light { color: #0b1220; background: #ffffff; border-color: rgba(255,255,255,0.9); }
+.billing-card .btn-primary { background: #1f8bd1; border-color: rgba(255,255,255,0.06); color: #fff; }
+
+/* Ensure notes text is readable */
+.billing-notes { color: rgba(226,238,248,0.95); margin-top: 2rem; }
+
+/* Responsive: stack columns on small screens */
+@media (max-width: 900px) {
+	.billing-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+	.billing-grid { grid-template-columns: 1fr; }
+}

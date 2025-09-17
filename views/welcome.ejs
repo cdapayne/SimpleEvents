@@ -26,8 +26,8 @@
           <h1 class="display-5 fw-bold mb-3">Understand every customer journey in minutes, not weeks.</h1>
           <p class="lead text-light mb-4">SimpleEvents turns raw event data into polished dashboards, charting real-time activation, retention, and revenue without a single SQL query.</p>
           <div class="d-flex flex-wrap gap-3">
-            <a href="/register" class="btn btn-lg btn-primary text-white shadow-lg">Start for free</a>
-            <a href="#live-demo" class="btn btn-lg btn-outline-light">Watch the live demo</a>
+            <a href="/register" class="btn btn-lg bg-primary text-white shadow-lg">Start for free</a>
+            <a href="#live-demo" class="btn btn-lg bg-secondary" style="color:white !important">Watch the live demo</a>
           </div>
           <div class="d-flex align-items-center gap-3 mt-4 text-light small opacity-75">
             <span class="d-flex align-items-center gap-2"><span class="badge bg-success">New</span> AI-assisted insight summaries</span>
@@ -90,9 +90,46 @@
   <div class="row g-4 align-items-stretch">
     <div class="col-md-4">
       <div class="welcome-card h-100">
-        <h3 class="h6 text-uppercase text-muted mb-3">Drop-in SDKs</h3>
-        <p class="mb-3">Ingest events from web, mobile, and serverless apps with a single API key. Our smart batching keeps data fresh without throttling.</p>
-        <code class="code-snippet">evently.track('user.signup', { plan: 'pro' })</code>
+        <h3 class="h6 text-uppercase text-muted mb-3">Easy implementation</h3>
+        <p class="mb-3">Drop this SDK into your codebase in minutes. Choose a language to see a minimal example you can copy-paste.</p>
+        <div class="mb-3">
+          <div class="btn-group" role="tablist" id="sdkTabs">
+            <button type="button" class="btn btn-sm btn-outline-light active" data-lang="javascript">JavaScript</button>
+            <button type="button" class="btn btn-sm btn-outline-light" data-lang="csharp">C#</button>
+            <button type="button" class="btn btn-sm btn-outline-light" data-lang="php">PHP</button>
+            <button type="button" class="btn btn-sm btn-outline-light" data-lang="go">Go</button>
+          </div>
+        </div>
+        <details class="mb-2">
+          <summary class="small text-muted">JavaScript (browser)</summary>
+          <pre class="code-snippet" style="white-space:pre-wrap; background: rgba(15,23,42,0.65); padding:0.7rem; border-radius:8px;">&lt;script src="https://cdn.jsdelivr.net/npm/evently-js@latest/dist/evently.min.js"&gt;&lt;/script&gt;
+evently.init('{YOUR_API_KEY}');
+evently.track('user.signup', { plan: 'free' });</pre>
+        </details>
+        <details class="mb-2">
+          <summary class="small text-muted">C# (server)</summary>
+          <pre class="code-snippet" style="white-space:pre-wrap; background: rgba(15,23,42,0.65); padding:0.7rem; border-radius:8px;">// C# (server)
+using Evently;
+var client = new EventlyClient("{YOUR_API_KEY}");
+await client.TrackAsync("user.signup", new { plan = "free" });</pre>
+        </details>
+        <details class="mb-2">
+          <summary class="small text-muted">PHP</summary>
+          <pre class="code-snippet" style="white-space:pre-wrap; background: rgba(15,23,42,0.65); padding:0.7rem; border-radius:8px;">// PHP
+require 'vendor/autoload.php';
+$client = new EventlyClient('{YOUR_API_KEY}');
+$client->track('user.signup', ['plan' => 'free']);</pre>
+        </details>
+        <details class="mb-0">
+          <summary class="small text-muted">Go</summary>
+          <pre class="code-snippet" style="white-space:pre-wrap; background: rgba(15,23,42,0.65); padding:0.7rem; border-radius:8px;">// Go
+package main
+import "github.com/evently/evently-go"
+func main(){
+  client := evently.NewClient("{YOUR_API_KEY}")
+  client.Track("user.signup", map[string]interface{}{ "plan": "free" })
+}</pre>
+        </details>
       </div>
     </div>
     <div class="col-md-4">
@@ -125,6 +162,72 @@
     </div>
   </div>
 </section>
+<!-- Plans & quick pricing summary -->
+<section class="container py-5">
+  <h2 class="h3 text-light mb-3">Plans & Pricing</h2>
+  <p class="text-muted mb-4">Compare tiers at a glance — see limits and available chart types for each plan.</p>
+  <div class="billing-grid">
+    <div class="billing-card current">
+      <h5 class="mb-2">Free</h5>
+      <div class="d-flex justify-content-between align-items-baseline">
+        <div class="small text-muted">events / month</div>
+        <div class="price">200</div>
+      </div>
+      <ul class="feature-list list-unstyled mt-3">
+        <li>Dashboards: 5</li>
+        <li>Saved charts: 5</li>
+        <li>Chart types: bar, line, pie</li>
+        <li>Branding: Not included</li>
+      </ul>
+    </div>
+
+    <div class="billing-card">
+      <h5 class="mb-2">Tier 1</h5>
+      <div class="d-flex justify-content-between align-items-baseline">
+        <div class="small text-muted">events / month</div>
+        <div class="price">50,000</div>
+      </div>
+      <ul class="feature-list list-unstyled mt-3">
+        <li>Dashboards: 20</li>
+        <li>Saved charts: 20</li>
+        <li>Chart types: bar, line, pie</li>
+        <li>Branding: Not included</li>
+      </ul>
+    </div>
+
+    <div class="billing-card">
+      <h5 class="mb-2">Tier 2</h5>
+      <div class="d-flex justify-content-between align-items-baseline">
+        <div class="small text-muted">events / month</div>
+        <div class="price">500,000</div>
+      </div>
+      <ul class="feature-list list-unstyled mt-3">
+        <li>Dashboards: 50</li>
+        <li>Saved charts: 50</li>
+        <li>Chart types: All current & future</li>
+        <li>Branding: Not included</li>
+      </ul>
+    </div>
+
+    <div class="billing-card">
+      <h5 class="mb-2">Tier 3</h5>
+      <div class="d-flex justify-content-between align-items-baseline">
+        <div class="small text-muted">events / month</div>
+        <div class="price">Unlimited</div>
+      </div>
+      <ul class="feature-list list-unstyled mt-3">
+        <li>Dashboards: Unlimited</li>
+        <li>Saved charts: Unlimited</li>
+        <li>Chart types: All current & future</li>
+        <li>Branding: Included</li>
+      </ul>
+    </div>
+  </div>
+  <div class="billing-notes">Tier 1 includes access to bar, line and pie charts. All other tiers include all current chart types and will receive new chart types in the future. Tier 3 additionally includes branding capability. All other tiers receive access to the rest of our capabilities.</div>
+</section>
+
+<!-- SDK tab switching removed; welcome page now uses static details blocks for implementation examples -->
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script nonce="<%= cspNonce %>">
 (function(){
